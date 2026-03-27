@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Tuple
 
-import pyautogui
-
+from .exceptions import ImageNotFoundError
+from .gui import gui
 from .types import ImageInput, OptionalRegion
 
 
@@ -15,7 +15,7 @@ class Point:
 
 
 def _resolve_search_region(search_region: OptionalRegion) -> Tuple[int, int, int, int]:
-    screen_w, screen_h = pyautogui.size()
+    screen_w, screen_h = gui.size()
     return search_region if search_region else (0, 0, screen_w, screen_h)
 
 
@@ -26,21 +26,21 @@ def _point_from_box(box) -> Point:
 
 
 class Target(ABC):
-    """所有 Target 的基类"""
+    """Base interface for anything that can resolve to a screen point."""
 
     @abstractmethod
     def resolve(self) -> Point:
-        """解析目标为中心点坐标，目标不存在时抛异常"""
+        """Resolve the target to a point or raise when it cannot be found."""
         ...
 
     @abstractmethod
     def exists(self) -> bool:
-        """检查目标是否完全在搜索区域内"""
+        """Return whether the target currently exists within the search region."""
         ...
 
 
 class PointTarget(Target):
-    """点坐标目标"""
+    """Static point target."""
 
     def __init__(self, x: int, y: int, search_region: OptionalRegion = None):
         self.x = x
@@ -60,7 +60,7 @@ class PointTarget(Target):
 
 
 class RegionTarget(Target):
-    """区域目标 - 返回区域中心点"""
+    """Rectangular target that resolves to its center point."""
 
     def __init__(
         self,
@@ -94,12 +94,8 @@ class RegionTarget(Target):
         return Point(self.x + self.width // 2, self.y + self.height // 2)
 
 
-class ImageNotFoundError(Exception):
-    """图像未找到异常"""
-
-
 class ImageTarget(Target):
-    """图像目标 - 通过图像匹配定位"""
+    """Image-based target resolved through pyautogui matching."""
 
     def __init__(
         self,
@@ -116,28 +112,28 @@ class ImageTarget(Target):
         self.retry = retry
 
     def _locate_with_retry(self) -> Point:
-        """带重试的图像定位"""
+        """Locate a single image match with retry semantics."""
         for attempt in range(self.retry + 1):
             try:
-                location = pyautogui.locateCenterOnScreen(
+                location = gui.locate_center_on_screen(
                     self.image,
                     confidence=self.confidence,
                     region=self.search_region,
                 )
                 if location is not None:
                     return Point(location.x, location.y)
-            except pyautogui.ImageNotFoundException:
+            except gui.image_not_found_exception:
                 location = None
             if attempt < self.retry:
                 time.sleep(self.timeout)
         raise ImageNotFoundError(f"Image not found: {self.image}")
 
     def _locate_all_with_retry(self) -> List[Point]:
-        """带重试的图像定位，返回所有匹配"""
+        """Locate all image matches and return their center points."""
         for attempt in range(self.retry + 1):
             try:
                 locations = list(
-                    pyautogui.locateAllOnScreen(
+                    gui.locate_all_on_screen(
                         self.image,
                         confidence=self.confidence,
                         region=self.search_region,
@@ -145,7 +141,7 @@ class ImageTarget(Target):
                 )
                 if locations:
                     return [_point_from_box(location) for location in locations]
-            except pyautogui.ImageNotFoundException:
+            except gui.image_not_found_exception:
                 locations = []
             if attempt < self.retry:
                 time.sleep(self.timeout)

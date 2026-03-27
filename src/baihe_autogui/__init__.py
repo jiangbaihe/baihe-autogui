@@ -1,7 +1,13 @@
 from .core.auto import Auto
 from .core.element import Element
-from .core.target import (
+from .core.exceptions import (
+    AutoGuiError,
+    ElementNotFoundError,
+    ElementTimeoutError,
     ImageNotFoundError,
+    ValidationError,
+)
+from .core.target import (
     ImageTarget,
     Point,
     PointTarget,
@@ -11,7 +17,11 @@ from .core.target import (
 
 __all__ = [
     "Auto",
+    "AutoGuiError",
     "Element",
+    "ElementNotFoundError",
+    "ElementTimeoutError",
+    "ValidationError",
     "Point",
     "Target",
     "PointTarget",

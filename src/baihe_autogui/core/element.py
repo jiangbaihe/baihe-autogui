@@ -1,8 +1,8 @@
 import time
 from typing import Any, Optional
 
-import pyautogui
-
+from .exceptions import ElementNotFoundError, ElementTimeoutError, ValidationError
+from .gui import gui
 from .target import Point, Target
 
 
@@ -25,42 +25,68 @@ class Element:
             return self._cached_point
         return self._target.resolve()
 
+    def _resolve_action_point(self) -> Optional[Point]:
+        if self._exists():
+            return self._resolve_point()
+        if self._required:
+            raise ElementNotFoundError("Element does not exist")
+        return None
+
     def if_exists(self) -> "Element":
-        """设置元素不存在时跳过后续操作"""
+        """Skip later actions when the target does not exist."""
         self._required = False
         return self
 
     def wait_until_exists(self, timeout: float = 10) -> "Element":
-        """等待元素出现，timeout=0 表示立即返回"""
+        """Wait for the target to appear. `timeout=0` checks once."""
         if timeout <= 0:
             if self._exists():
                 return self
             if self._required:
-                raise TimeoutError(f"Element not found (timeout={timeout}s)")
+                raise ElementTimeoutError(f"Element not found (timeout={timeout}s)")
             return self
 
         start = time.monotonic()
         while not self._exists():
             if time.monotonic() - start > timeout:
                 if self._required:
-                    raise TimeoutError(f"Element not found within {timeout}s")
+                    raise ElementTimeoutError(f"Element not found within {timeout}s")
                 return self
             time.sleep(0.1)
         return self
 
     def assert_exists(self) -> "Element":
-        """断言元素必须存在，否则抛异常"""
+        """Require the target to exist before continuing."""
         if not self._exists():
-            raise AssertionError("Element does not exist")
+            raise ElementNotFoundError("Element does not exist")
+        return self
+
+    def move_to(self) -> "Element":
+        point = self._resolve_action_point()
+        if point is None:
+            return self
+        gui.move_to(point.x, point.y)
         return self
 
     def click(self) -> "Element":
-        if not self._exists():
-            if self._required:
-                raise AssertionError("Element does not exist")
+        point = self._resolve_action_point()
+        if point is None:
             return self
-        point = self._resolve_point()
-        pyautogui.click(point.x, point.y)
+        gui.click(point.x, point.y)
+        return self
+
+    def right_click(self) -> "Element":
+        point = self._resolve_action_point()
+        if point is None:
+            return self
+        gui.right_click(point.x, point.y)
+        return self
+
+    def double_click(self) -> "Element":
+        point = self._resolve_action_point()
+        if point is None:
+            return self
+        gui.double_click(point.x, point.y)
         return self
 
     def wait(self, seconds: float) -> "Element":
@@ -68,6 +94,16 @@ class Element:
         return self
 
     def write(self, text: str) -> "Element":
-        """输入文本"""
-        pyautogui.typewrite(text)
+        """Type text with the active keyboard focus."""
+        gui.typewrite(text)
+        return self
+
+    def press(self, key: str) -> "Element":
+        gui.press(key)
+        return self
+
+    def hotkey(self, *keys: str) -> "Element":
+        if not keys:
+            raise ValidationError("hotkey requires at least one key")
+        gui.hotkey(*keys)
         return self

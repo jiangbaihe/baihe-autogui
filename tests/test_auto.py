@@ -4,6 +4,7 @@ import pyautogui
 import pytest
 
 from baihe_autogui.core.auto import Auto
+from baihe_autogui.core.exceptions import ValidationError
 from baihe_autogui.core.target import ImageTarget, Point, PointTarget, RegionTarget
 
 
@@ -63,7 +64,7 @@ class TestAuto:
         assert len(elements) == 1
         assert isinstance(elements[0]._target, RegionTarget)
 
-    @patch("baihe_autogui.core.target.pyautogui.locateAllOnScreen")
+    @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
     def test_locate_all_image(self, mock_all):
         mock_all.return_value = [
             MagicMock(left=80, top=180, width=40, height=40),
@@ -78,7 +79,7 @@ class TestAuto:
         assert elements[1]._cached_point == Point(300, 400)
         assert elements[2]._cached_point == Point(500, 600)
 
-    @patch("baihe_autogui.core.target.pyautogui.locateAllOnScreen")
+    @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
     def test_locate_all_image_not_found_returns_empty_list(self, mock_all):
         mock_all.side_effect = pyautogui.ImageNotFoundException()
         auto = Auto()
@@ -87,28 +88,28 @@ class TestAuto:
 
     def test_locate_unsupported_type_raises(self):
         auto = Auto()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             auto.locate(12345)  # Not a valid input type
 
     def test_locate_invalid_point_target_raises(self):
         auto = Auto()
-        with pytest.raises(ValueError, match="point target"):
+        with pytest.raises(ValidationError, match="point target"):
             auto.locate((100, "200"))
 
     def test_locate_invalid_region_target_raises(self):
         auto = Auto()
-        with pytest.raises(ValueError, match="region target"):
+        with pytest.raises(ValidationError, match="region target"):
             auto.locate((100, 200, 0, 30))
 
     def test_locate_invalid_search_region_raises(self):
         auto = Auto()
-        with pytest.raises(ValueError, match="region width and height"):
+        with pytest.raises(ValidationError, match="region width and height"):
             auto.locate((100, 200), region=(0, 0, 0, 600))
 
     @pytest.mark.parametrize("confidence", [-0.1, 1.1])
     def test_locate_invalid_confidence_raises(self, confidence):
         auto = Auto()
-        with pytest.raises(ValueError, match="confidence"):
+        with pytest.raises(ValidationError, match="confidence"):
             auto.locate("btn.png", confidence=confidence)
 
     @pytest.mark.parametrize(
@@ -120,5 +121,5 @@ class TestAuto:
     )
     def test_locate_invalid_retry_options_raise(self, kwargs, message):
         auto = Auto()
-        with pytest.raises(ValueError, match=message):
+        with pytest.raises(ValidationError, match=message):
             auto.locate("btn.png", **kwargs)

@@ -1,7 +1,14 @@
 from .auto import Auto
 from .element import Element
-from .target import (
+from .exceptions import (
+    AutoGuiError,
+    ElementNotFoundError,
+    ElementTimeoutError,
     ImageNotFoundError,
+    ValidationError,
+)
+from .gui import gui
+from .target import (
     ImageTarget,
     Point,
     PointTarget,
@@ -11,11 +18,16 @@ from .target import (
 
 __all__ = [
     "Auto",
+    "AutoGuiError",
     "Element",
+    "ElementNotFoundError",
+    "ElementTimeoutError",
+    "gui",
+    "ImageNotFoundError",
     "Point",
     "Target",
     "PointTarget",
     "RegionTarget",
     "ImageTarget",
-    "ImageNotFoundError",
+    "ValidationError",
 ]
