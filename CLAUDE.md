@@ -32,6 +32,7 @@ git status --short --branch
 建议同时核对：
 
 - `pyproject.toml` 中的当前版本号
+- `uv.lock` 是否已经同步到当前项目版本与依赖状态
 - `git log --oneline --decorate -5`
 - `git tag --list`
 
@@ -113,6 +114,7 @@ uv run pytest tests/test_auto.py::TestAuto::test_locate_point
 - `README_zh.md`
 - `CHANGELOG.md`
 - `RELEASING.md`
+- `uv.lock`
 - `.github/workflows/release.yml`
 
 ## 6. 核心架构
@@ -251,9 +253,10 @@ uv build
 
 1. 修改代码、测试、文档。
 2. 更新 `pyproject.toml` 里的版本号。
-3. 更新 `CHANGELOG.md`。
-4. 如有必要，同步更新 `README.md`、`README_zh.md`、`CLAUDE.md`、`RELEASING.md`。
-5. 运行：
+3. 如版本号或依赖发生变化，同步刷新并提交 `uv.lock`。
+4. 更新 `CHANGELOG.md`。
+5. 如有必要，同步更新 `README.md`、`README_zh.md`、`CLAUDE.md`、`RELEASING.md`。
+6. 运行：
 
 ```bash
 git status --short --branch
@@ -263,12 +266,12 @@ uv run ruff check .
 uv build
 ```
 
-6. 检查是否有新文件需要纳入仓库，尤其是新增测试、fixture、脚本或文档资源。
-7. `git add ...`
-8. `git commit -m "..."`  
-9. 先 `git push origin main`
-10. 确认 `HEAD` 正确后，再创建 tag，例如 `git tag vX.Y.Z`
-11. 最后再推 tag：`git push origin refs/tags/vX.Y.Z:refs/tags/vX.Y.Z`
+7. 检查是否有新文件需要纳入仓库，尤其是新增测试、fixture、脚本、文档资源，以及应同步提交的 `uv.lock`。
+8. `git add ...`
+9. `git commit -m "..."`  
+10. 先 `git push origin main`
+11. 确认 `HEAD` 正确后，再创建 tag，例如 `git tag vX.Y.Z`
+12. 最后再推 tag：`git push origin refs/tags/vX.Y.Z:refs/tags/vX.Y.Z`
 
 关键约束：
 

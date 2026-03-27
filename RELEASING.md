@@ -5,8 +5,9 @@ This project keeps releases intentionally simple.
 ## Before tagging
 
 1. Update the version in `pyproject.toml`.
-2. Move the relevant notes from `CHANGELOG.md` under `Unreleased` into a new version section.
-3. Run the local checks:
+2. Refresh `uv.lock` if the project version or dependencies changed, and commit that lockfile update with the release changes.
+3. Move the relevant notes from `CHANGELOG.md` under `Unreleased` into a new version section.
+4. Run the local checks:
 
 ```bash
 uv sync --dev
@@ -15,7 +16,7 @@ uv run ruff check .
 uv build
 ```
 
-4. Optionally run the wheel smoke check locally:
+5. Optionally run the wheel smoke check locally:
 
 ```bash
 uv run --python 3.8 --no-project --with ./dist/*.whl python scripts/smoke_import.py
