@@ -16,3 +16,7 @@ class ElementTimeoutError(TimeoutError, AutoGuiError):
 
 class ImageNotFoundError(AutoGuiError):
     """Raised when an image target cannot be found."""
+
+
+class OverlayUnavailableError(AutoGuiError):
+    """Raised when the highlight overlay cannot be created."""

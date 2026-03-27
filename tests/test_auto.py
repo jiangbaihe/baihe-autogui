@@ -1,3 +1,4 @@
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -18,6 +19,11 @@ class TestAuto:
     def test_auto_creation(self):
         auto = Auto()
         assert isinstance(auto, Auto)
+
+    @patch("baihe_autogui.core.auto.overlay.clear")
+    def test_clear_highlights_calls_overlay_clear(self, mock_clear):
+        Auto().clear_highlights()
+        mock_clear.assert_called_once_with()
 
     def test_locate_point(self):
         auto = Auto()
@@ -50,11 +56,13 @@ class TestAuto:
     def test_locate_with_confidence(self):
         auto = Auto()
         element = auto.locate("btn.png", confidence=0.9)
+        assert isinstance(element._target, ImageTarget)
         assert element._target.confidence == 0.9
 
     def test_locate_with_retry_timeout(self):
         auto = Auto()
         element = auto.locate("btn.png", retry=3, timeout=0.5)
+        assert isinstance(element._target, ImageTarget)
         assert element._target.retry == 3
         assert element._target.timeout == 0.5
 
@@ -160,7 +168,7 @@ class TestAuto:
     def test_locate_unsupported_type_raises(self):
         auto = Auto()
         with pytest.raises(ValidationError):
-            auto.locate(12345)  # Not a valid input type
+            auto.locate(cast(Any, 12345))  # Not a valid input type
 
     @pytest.mark.parametrize("method_name", ["locate", "locate_all"])
     def test_locate_empty_target_list_raises(self, method_name):
@@ -172,7 +180,7 @@ class TestAuto:
     def test_locate_invalid_point_target_raises(self):
         auto = Auto()
         with pytest.raises(ValidationError, match="point target"):
-            auto.locate((100, "200"))
+            auto.locate(cast(Any, (100, "200")))
 
     def test_locate_invalid_region_target_raises(self):
         auto = Auto()

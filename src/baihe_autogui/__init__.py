@@ -7,6 +7,7 @@ from .core.exceptions import (
     ElementNotFoundError,
     ElementTimeoutError,
     ImageNotFoundError,
+    OverlayUnavailableError,
     ValidationError,
 )
 from .core.target import (
@@ -30,6 +31,7 @@ __all__ = [
     "ElementTimeoutError",
     "ImageTarget",
     "ImageNotFoundError",
+    "OverlayUnavailableError",
     "Point",
     "PointTarget",
     "RegionTarget",

@@ -39,6 +39,7 @@ auto.locate('button.png').move_to().click().wait(0.5).write('hello')
 auto.locate('button.png').right_click()
 auto.locate('button.png').double_click().press('enter')
 auto.locate('button.png').hotkey('ctrl', 'a').write('replacement')
+auto.locate('button.png').highlight(timeout=1.5).click()
 
 # Conditional execution
 auto.locate('button.png').if_exists().click()
@@ -62,6 +63,12 @@ for e in auto.locate_all('button.png'):
 # Gather results from multiple locators
 for e in auto.locate_all(['button.png', 'secondary_button.png', (100, 200)]):
     e.click()
+
+# Highlight and clear overlays
+submit = auto.locate('submit.png')
+submit.highlight(timeout=5)
+submit.clear_highlight()
+auto.clear_highlights()
 ```
 
 ## Core Concepts
@@ -81,12 +88,13 @@ Chainable action wrapper created by `Auto.locate()`:
 - `move_to()` / `click()` / `right_click()` / `double_click()` - Mouse actions
 - `wait()` / `write()` - General actions
 - `press()` / `hotkey()` - Keyboard actions
+- `highlight()` / `clear_highlight()` - Debug overlay actions
 - `locate()` / `locate_all()` - Scope a follow-up search to the current image or region
 - `if_exists()` / `wait_until_exists()` / `assert_exists()` - Conditional methods
 
 ### Auto
 
-Main entry point. `locate()` returns one `Element`; `locate_all()` returns a list and yields `[]` when an image is not found. Both methods accept either one locator or an ordered list of mixed locators.
+Main entry point. `locate()` returns one `Element`; `locate_all()` returns a list and yields `[]` when an image is not found. Both methods accept either one locator or an ordered list of mixed locators. `clear_highlights()` clears every active debug overlay.
 
 ## API Reference
 
@@ -118,15 +126,22 @@ element.wait(seconds)     # Wait
 element.write(text)       # Type text
 element.press("enter")    # Press a single key
 element.hotkey("ctrl", "c")  # Press a key combination
+element.highlight(timeout=1.5, color="red", thickness=2)  # Draw a temporary overlay
+element.clear_highlight()  # Clear this element's overlay
 element.locate("inner.png")  # Search inside the current image or region
 element.locate_all("item.png")  # Search all matches inside the current image or region
 element.if_exists()      # Skip if element doesn't exist
 element.wait_until_exists(timeout=10)  # Wait until appears
 element.assert_exists()  # Assert element must exist
+auto.clear_highlights()  # Clear every active overlay
 ```
 
 Nested locate uses the current image match box or region tuple as the next `region=...`.
 Point targets do not define an area, so they cannot be used as an outer scope.
+`highlight()` reuses cached points or regions when available so the visible overlay matches follow-up actions.
+Point highlights are drawn as red crosshairs, while region and image highlights are drawn as red frames.
+The current overlay backend is implemented with native Win32 windows.
+If the current environment cannot provide the overlay backend, `highlight()` raises `OverlayUnavailableError`.
 
 ### Coordinate Semantics
 
@@ -141,6 +156,7 @@ Point targets do not define an area, so they cannot be used as an outer scope.
 - `ElementNotFoundError` - A required element was missing for an immediate action
 - `ElementTimeoutError` - Waiting for a required element timed out
 - `ImageNotFoundError` - An image target could not be matched
+- `OverlayUnavailableError` - A debug highlight overlay could not be created in the current environment
 - `__version__` - Installed package version string exposed at the package root
 
 ## Development

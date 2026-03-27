@@ -39,7 +39,9 @@ def _regions_intersect(
     return _intersection_area(left, right) > 0
 
 
-def _dedupe_match_regions(regions: List[Tuple[int, int, int, int]]) -> List[Tuple[int, int, int, int]]:
+def dedupe_match_regions(
+    regions: List[Tuple[int, int, int, int]]
+) -> List[Tuple[int, int, int, int]]:
     deduped: List[Tuple[int, int, int, int]] = []
     clusters: List[List[Tuple[int, int, int, int]]] = []
 
@@ -81,7 +83,7 @@ def _region_from_box(box) -> Tuple[int, int, int, int]:
     return (box.left, box.top, box.width, box.height)
 
 
-def _point_from_region(region: Tuple[int, int, int, int]) -> Point:
+def point_from_region(region: Tuple[int, int, int, int]) -> Point:
     x, y, width, height = region
     return Point(x + width // 2, y + height // 2)
 
@@ -185,7 +187,7 @@ class ImageTarget(Target):
 
     def _locate_with_retry(self) -> Point:
         """Locate a single image match with retry semantics."""
-        return _point_from_region(self._locate_region_with_retry())
+        return point_from_region(self._locate_region_with_retry())
 
     def _locate_region_with_retry(self) -> Tuple[int, int, int, int]:
         """Locate a single image match box with retry semantics."""
@@ -206,7 +208,7 @@ class ImageTarget(Target):
 
     def _locate_all_with_retry(self) -> List[Point]:
         """Locate all image matches and return their center points."""
-        return [_point_from_region(region) for region in self._locate_all_regions_with_retry()]
+        return [point_from_region(region) for region in self._locate_all_regions_with_retry()]
 
     def _locate_all_regions_with_retry(self) -> List[Tuple[int, int, int, int]]:
         """Locate all image matches and return their boxes."""
@@ -220,7 +222,7 @@ class ImageTarget(Target):
                     )
                 )
                 if locations:
-                    return _dedupe_match_regions(
+                    return dedupe_match_regions(
                         [_region_from_box(location) for location in locations]
                     )
             except gui.image_not_found_exception:

@@ -5,6 +5,7 @@ from .exceptions import (
     ElementNotFoundError,
     ElementTimeoutError,
     ImageNotFoundError,
+    OverlayUnavailableError,
     ValidationError,
 )
 from .gui import gui
@@ -24,6 +25,7 @@ __all__ = [
     "ElementTimeoutError",
     "gui",
     "ImageNotFoundError",
+    "OverlayUnavailableError",
     "Point",
     "Target",
     "PointTarget",

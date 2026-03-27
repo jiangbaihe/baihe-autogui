@@ -8,6 +8,7 @@ from baihe_autogui.core.exceptions import (
     ElementTimeoutError,
     ValidationError,
 )
+from baihe_autogui.core.overlay import HighlightSpec
 from baihe_autogui.core.target import Point, PointTarget, RegionTarget
 
 
@@ -123,6 +124,139 @@ class TestElement:
     def test_wait_returns_self(self):
         element = Element(PointTarget(100, 200), MockAuto())
         assert element.wait(0.001) is element
+
+    @patch("baihe_autogui.core.element.overlay.remove_many")
+    @patch("baihe_autogui.core.element.overlay.add")
+    @patch("baihe_autogui.core.target.gui.size")
+    def test_highlight_region_adds_overlay_and_caches_region(
+        self, mock_size, mock_add, mock_remove_many
+    ):
+        mock_size.return_value = (1920, 1080)
+        mock_add.return_value = "highlight-1"
+        element = Element(RegionTarget(10, 20, 100, 80), MockAuto())
+
+        result = element.highlight(timeout=1.5, color="lime", thickness=3)
+
+        assert result is element
+        mock_remove_many.assert_called_once_with(set())
+        mock_add.assert_called_once_with(
+            HighlightSpec(
+                kind="region",
+                region=(10, 20, 100, 80),
+                point=None,
+                color="lime",
+                thickness=3,
+            ),
+            timeout=1.5,
+        )
+        assert element._cached_region == (10, 20, 100, 80)
+        assert element._cached_point == Point(60, 60)
+
+    @patch("baihe_autogui.core.element.overlay.remove_many")
+    @patch("baihe_autogui.core.element.overlay.add")
+    def test_highlight_with_cached_point_skips_lookup(self, mock_add, mock_remove_many):
+        mock_add.return_value = "highlight-1"
+        target = MagicMock()
+        target.exists.side_effect = AssertionError("cached point should skip lookup")
+        element = Element(target, cached_point=Point(300, 400))
+
+        element.highlight(timeout=2.0)
+
+        mock_remove_many.assert_called_once_with(set())
+        mock_add.assert_called_once_with(
+            HighlightSpec(
+                kind="point",
+                point=Point(300, 400),
+                region=None,
+                color="red",
+                thickness=2,
+            ),
+            timeout=2.0,
+        )
+        target.exists.assert_not_called()
+
+    @patch("baihe_autogui.core.element.overlay.remove_many")
+    @patch("baihe_autogui.core.element.overlay.add")
+    def test_highlight_refreshes_existing_element_highlight(
+        self, mock_add, mock_remove_many
+    ):
+        mock_add.side_effect = ["highlight-1", "highlight-2"]
+        element = Element(PointTarget(100, 200), MockAuto(), cached_point=Point(100, 200))
+
+        element.highlight(timeout=1.0)
+        element.highlight(timeout=2.0)
+
+        assert mock_remove_many.call_args_list[0].args == (set(),)
+        assert mock_remove_many.call_args_list[1].args == ({"highlight-1"},)
+        assert element._highlight_ids == {"highlight-2"}
+
+    @patch("baihe_autogui.core.element.overlay.remove_many")
+    @patch("baihe_autogui.core.element.overlay.add")
+    @patch("baihe_autogui.core.target.gui.size")
+    def test_highlight_skips_when_not_exists_and_not_required(
+        self, mock_size, mock_add, mock_remove_many
+    ):
+        mock_size.return_value = (1920, 1080)
+        element = Element(PointTarget(3000, 3000), MockAuto()).if_exists()
+
+        result = element.highlight(timeout=1.0)
+
+        assert result is element
+        mock_add.assert_not_called()
+        mock_remove_many.assert_not_called()
+
+    @patch("baihe_autogui.core.element.overlay.remove_many")
+    @patch("baihe_autogui.core.target.gui.size")
+    def test_highlight_raises_when_not_exists_and_required(
+        self, mock_size, mock_remove_many
+    ):
+        mock_size.return_value = (1920, 1080)
+        element = Element(PointTarget(3000, 3000), MockAuto())
+
+        with pytest.raises(ElementNotFoundError):
+            element.highlight(timeout=1.0)
+
+        mock_remove_many.assert_not_called()
+
+    @patch("baihe_autogui.core.element.gui.click")
+    @patch("baihe_autogui.core.element.overlay.remove_many")
+    @patch("baihe_autogui.core.element.overlay.add")
+    def test_highlight_caches_resolved_region_for_follow_up_click(
+        self, mock_add, mock_remove_many, mock_click
+    ):
+        mock_add.return_value = "highlight-1"
+        target = MagicMock()
+        target.exists.return_value = True
+        target.resolve_region.return_value = (80, 180, 40, 40)
+        target.resolve.side_effect = AssertionError("highlight should cache click point")
+        element = Element(target, auto=MockAuto())
+
+        element.highlight(timeout=1.0).click()
+
+        mock_remove_many.assert_called_once_with(set())
+        mock_click.assert_called_once_with(100, 200)
+        target.resolve.assert_not_called()
+
+    @patch("baihe_autogui.core.element.overlay.remove_many")
+    def test_clear_highlight_removes_only_owned_ids(self, mock_remove_many):
+        element = Element(PointTarget(100, 200), MockAuto(), cached_point=Point(100, 200))
+        element._highlight_ids = {"highlight-1", "highlight-2"}
+
+        result = element.clear_highlight()
+
+        assert result is element
+        mock_remove_many.assert_called_once_with({"highlight-1", "highlight-2"})
+        assert element._highlight_ids == set()
+
+    def test_highlight_invalid_timeout_raises(self):
+        element = Element(PointTarget(100, 200), MockAuto())
+        with pytest.raises(ValidationError, match="highlight timeout"):
+            element.highlight(timeout=-0.1)
+
+    def test_highlight_invalid_thickness_raises(self):
+        element = Element(PointTarget(100, 200), MockAuto())
+        with pytest.raises(ValidationError, match="highlight thickness"):
+            element.highlight(thickness=0)
 
     @patch("baihe_autogui.core.element.gui.typewrite")
     @patch("baihe_autogui.core.target.gui.size")

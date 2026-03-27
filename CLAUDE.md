@@ -17,6 +17,7 @@
 ### 已发布状态
 
 - PyPI 项目：`baihe-autogui`
+- 当前仓库版本：`0.1.8`
 - 当前已发布版本：`0.1.7`
 - 发布方式：GitHub Actions + PyPI Trusted Publishing
 
@@ -41,6 +42,8 @@ git status --short --branch
 - 图像定位依赖 `opencv-python` 作为运行时依赖，避免用户在使用 `confidence=...` 时额外手动安装 OpenCV
 - `Path` 类型的图像输入会在内部标准化为字符串，避免 OpenCV 匹配路径下的类型错误
 - `locate_all()` 会对高度重叠或跨模板重复命中的图像结果去重，避免海量重复 `Element`
+- `Element.highlight()` / `clear_highlight()` 与 `Auto.clear_highlights()` 提供临时调试高亮，便于脚本编写时观察当前目标与执行状态
+- 当前调试高亮后端基于 Win32 overlay：区域/图像绘制红色边框，点坐标绘制红色十字；不应把它误当成跨平台能力
 
 不要假设当前工作区永远带着这组未提交改动；应以实时 `git status` 为准。
 
@@ -89,7 +92,9 @@ uv run pytest tests/test_auto.py::TestAuto::test_locate_point
 - `src/baihe_autogui/core/auto.py`
   负责 `locate()` / `locate_all()` 的输入解析与目标创建
 - `src/baihe_autogui/core/element.py`
-  负责链式动作、条件控制、嵌套定位
+  负责链式动作、条件控制、嵌套定位与调试高亮
+- `src/baihe_autogui/core/overlay.py`
+  负责调试高亮 overlay 的生命周期管理与绘制后端
 - `src/baihe_autogui/core/target.py`
   负责点、区域、图像等 Target 的解析语义
 - `src/baihe_autogui/core/types.py`
@@ -135,6 +140,7 @@ auto.locate(["primary.png", "fallback.png", (100, 200)])
 
 - 鼠标动作：`move_to()` / `click()` / `right_click()` / `double_click()`
 - 键盘动作：`write()` / `press()` / `hotkey()`
+- 调试动作：`highlight()` / `clear_highlight()`
 - 条件动作：`if_exists()` / `wait_until_exists()` / `assert_exists()`
 - 嵌套定位：`locate()` / `locate_all()`
 
@@ -148,6 +154,7 @@ auto.locate(["primary.png", "fallback.png", (100, 200)])
 - `locate_all(single_locator)`：返回一个 `Element` 列表
 - `locate(locator_list)`：按输入顺序尝试多个定位器，返回第一个命中的 `Element`
 - `locate_all(locator_list)`：按输入顺序展开每个定位器的结果并合并返回
+- `clear_highlights()`：清除当前所有活动中的调试高亮
 
 ## 7. 已经拍板的语义
 

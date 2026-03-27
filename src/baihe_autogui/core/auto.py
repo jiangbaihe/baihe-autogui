@@ -3,14 +3,15 @@ from typing import List, Tuple
 
 from .element import Element
 from .exceptions import ValidationError
+from .overlay import overlay
 from .target import (
     ImageTarget,
     MultiTarget,
     PointTarget,
     RegionTarget,
     Target,
-    _dedupe_match_regions,
-    _point_from_region,
+    dedupe_match_regions,
+    point_from_region,
 )
 from .types import LocateInput, OptionalRegion, SingleLocateInput
 
@@ -29,12 +30,15 @@ def _validate_region(region: OptionalRegion, *, name: str) -> None:
 
 
 class Auto:
+    def clear_highlights(self) -> None:
+        overlay.clear()
+
     def locate(
         self,
         target: LocateInput,
         *,
         region: OptionalRegion = None,
-        confidence: float = 0.8,
+        confidence: float = 0.9,
         timeout: float = 0,
         retry: int = 0,
     ) -> Element:
@@ -50,7 +54,7 @@ class Auto:
         target: LocateInput,
         *,
         region: OptionalRegion = None,
-        confidence: float = 0.8,
+        confidence: float = 0.9,
         timeout: float = 0,
         retry: int = 0,
     ) -> List[Element]:
@@ -59,7 +63,7 @@ class Auto:
         for t in self._create_targets(target, region, confidence, timeout, retry):
             if isinstance(t, ImageTarget):
                 for match_region in t._locate_all_regions_with_retry():
-                    deduped = _dedupe_match_regions(matched_regions + [match_region])
+                    deduped = dedupe_match_regions(matched_regions + [match_region])
                     if len(deduped) == len(matched_regions):
                         continue
                     matched_regions.append(match_region)
@@ -67,7 +71,7 @@ class Auto:
                         Element(
                             t,
                             auto=self,
-                            cached_point=_point_from_region(match_region),
+                            cached_point=point_from_region(match_region),
                             cached_region=match_region,
                         )
                     )

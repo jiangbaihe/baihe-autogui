@@ -6,6 +6,7 @@ from baihe_autogui import (
     ElementTimeoutError,
     ImageNotFoundError,
     ImageTarget,
+    OverlayUnavailableError,
     Point,
     PointTarget,
     RegionTarget,
@@ -31,6 +32,7 @@ def test_exception_exports():
     assert issubclass(ElementNotFoundError, (AssertionError, AutoGuiError))
     assert issubclass(ElementTimeoutError, (TimeoutError, AutoGuiError))
     assert issubclass(ImageNotFoundError, AutoGuiError)
+    assert issubclass(OverlayUnavailableError, AutoGuiError)
 
 
 def test_core_gui_export():

@@ -1,9 +1,15 @@
 import time
-from typing import Any, Optional
+from typing import Any, Optional, Set
 
-from .exceptions import ElementNotFoundError, ElementTimeoutError, ValidationError
+from .exceptions import (
+    ElementNotFoundError,
+    ElementTimeoutError,
+    ImageNotFoundError,
+    ValidationError,
+)
 from .gui import gui
-from .target import Point, Target
+from .overlay import HighlightSpec, overlay
+from .target import ImageTarget, Point, Target, point_from_region
 from .types import LocateInput, OptionalRegion
 
 
@@ -20,6 +26,7 @@ class Element:
         self._required = True
         self._cached_point = cached_point
         self._cached_region = cached_region
+        self._highlight_ids: Set[str] = set()
 
     def _exists(self) -> bool:
         return self._cached_point is not None or self._target.exists()
@@ -35,6 +42,65 @@ class Element:
         if self._required:
             raise ElementNotFoundError("Element does not exist")
         return None
+
+    def _resolve_highlight_spec(self) -> Optional[HighlightSpec]:
+        if self._cached_region is not None:
+            self._cached_point = point_from_region(self._cached_region)
+            return HighlightSpec(
+                kind="region",
+                region=self._cached_region,
+                color="red",
+                thickness=2,
+            )
+
+        if self._cached_point is not None:
+            return HighlightSpec(
+                kind="point",
+                point=self._cached_point,
+                color="red",
+                thickness=2,
+            )
+
+        try:
+            if isinstance(self._target, ImageTarget):
+                region = self._target.resolve_region()
+                if region is None:
+                    raise ElementNotFoundError("Element does not exist")
+                self._cached_region = region
+                self._cached_point = point_from_region(region)
+                return HighlightSpec(
+                    kind="region",
+                    region=region,
+                    color="red",
+                    thickness=2,
+                )
+
+            if not self._target.exists():
+                raise ElementNotFoundError("Element does not exist")
+
+            region = self._target.resolve_region()
+            if region is not None:
+                self._cached_region = region
+                self._cached_point = point_from_region(region)
+                return HighlightSpec(
+                    kind="region",
+                    region=region,
+                    color="red",
+                    thickness=2,
+                )
+
+            point = self._target.resolve()
+            self._cached_point = point
+            return HighlightSpec(
+                kind="point",
+                point=point,
+                color="red",
+                thickness=2,
+            )
+        except (ElementNotFoundError, ImageNotFoundError, ValueError) as exc:
+            if self._required:
+                raise ElementNotFoundError("Element does not exist") from exc
+            return None
 
     def _resolve_scope_region(self) -> OptionalRegion:
         if self._cached_region is not None:
@@ -113,6 +179,40 @@ class Element:
 
     def wait(self, seconds: float) -> "Element":
         time.sleep(seconds)
+        return self
+
+    def highlight(
+        self,
+        timeout: Optional[float] = 0.8,
+        color: str = "red",
+        thickness: int = 2,
+    ) -> "Element":
+        if timeout is not None and timeout < 0:
+            raise ValidationError("highlight timeout must be greater than or equal to 0")
+        if thickness <= 0:
+            raise ValidationError("highlight thickness must be greater than 0")
+
+        spec = self._resolve_highlight_spec()
+        if spec is None:
+            return self
+
+        self.clear_highlight()
+        highlight_id = overlay.add(
+            HighlightSpec(
+                kind=spec.kind,
+                point=spec.point,
+                region=spec.region,
+                color=color,
+                thickness=thickness,
+            ),
+            timeout=timeout,
+        )
+        self._highlight_ids = {highlight_id}
+        return self
+
+    def clear_highlight(self) -> "Element":
+        overlay.remove_many(set(self._highlight_ids))
+        self._highlight_ids.clear()
         return self
 
     def write(self, text: str) -> "Element":

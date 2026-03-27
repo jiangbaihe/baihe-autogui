@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-03-27
+
+### Added
+- Added `Element.highlight()` to draw temporary debug overlays around point, region, and image targets without changing existing locate semantics
+- Added `Element.clear_highlight()` and `Auto.clear_highlights()` so scripts can clear one element's overlay or all active overlays explicitly
+
+### Changed
+- `highlight()` now snapshots and reuses the resolved point or region so the visible overlay stays aligned with follow-up element actions
+- Replaced the temporary `tkinter` highlight backend with a native Win32 overlay so region and image highlights render as red frames and point highlights render as red crosshairs
+
 ## [0.1.7] - 2026-03-27
 
 ### Fixed

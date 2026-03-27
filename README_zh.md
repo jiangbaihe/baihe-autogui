@@ -39,6 +39,7 @@ auto.locate("button.png").move_to().click().wait(0.5).write("hello")
 auto.locate("button.png").right_click()
 auto.locate("button.png").double_click().press("enter")
 auto.locate("button.png").hotkey("ctrl", "a").write("replacement")
+auto.locate("button.png").highlight(timeout=1.5).click()
 
 # 条件执行
 auto.locate("button.png").if_exists().click()
@@ -62,6 +63,12 @@ for element in auto.locate_all("button.png"):
 # 汇总多个定位器的全部结果
 for element in auto.locate_all(["button.png", "secondary_button.png", (100, 200)]):
     element.click()
+
+# 高亮并清理调试边框
+submit = auto.locate("submit.png")
+submit.highlight(timeout=5)
+submit.clear_highlight()
+auto.clear_highlights()
 ```
 
 ## 核心概念
@@ -83,12 +90,13 @@ for element in auto.locate_all(["button.png", "secondary_button.png", (100, 200)
 - `move_to()` / `click()` / `right_click()` / `double_click()`：鼠标动作
 - `wait()` / `write()`：通用动作
 - `press()` / `hotkey()`：键盘动作
+- `highlight()` / `clear_highlight()`：调试高亮动作
 - `locate()` / `locate_all()`：在当前图像或区域范围内继续查找
 - `if_exists()` / `wait_until_exists()` / `assert_exists()`：条件控制
 
 ### Auto
 
-主入口。`locate()` 返回单个 `Element`；`locate_all()` 返回列表，当图像未匹配到时返回 `[]`。这两个方法既支持单个定位器，也支持按顺序排列的混合定位器列表。
+主入口。`locate()` 返回单个 `Element`；`locate_all()` 返回列表，当图像未匹配到时返回 `[]`。这两个方法既支持单个定位器，也支持按顺序排列的混合定位器列表。`clear_highlights()` 可清除当前所有调试高亮。
 
 ## API 说明
 
@@ -120,15 +128,22 @@ element.wait(seconds)        # 等待
 element.write(text)          # 输入文本
 element.press("enter")       # 按下单个按键
 element.hotkey("ctrl", "c")  # 按下组合键
+element.highlight(timeout=1.5, color="red", thickness=2)  # 绘制临时高亮
+element.clear_highlight()    # 清除当前元素的高亮
 element.locate("inner.png")  # 在当前图像或区域内继续查找
 element.locate_all("item.png")  # 在当前图像或区域内查找全部匹配项
 element.if_exists()          # 目标不存在时跳过后续动作
 element.wait_until_exists(timeout=10)  # 等待目标出现
 element.assert_exists()      # 断言目标必须存在
+auto.clear_highlights()      # 清除全部高亮
 ```
 
 嵌套 `locate()` 会把当前图像匹配框或区域元组作为下一次搜索的 `region=...`。  
 点目标本身不定义面积，因此不能作为外层搜索范围。
+如果当前 `Element` 已经缓存了点位或区域，`highlight()` 会优先复用缓存，避免高亮位置与后续动作漂移。
+点目标的高亮会绘制成红色十字，区域和图像目标则绘制为红色边框。
+当前 overlay 后端基于原生 Win32 窗口实现。
+如果当前环境无法提供 overlay 后端，`highlight()` 会抛出 `OverlayUnavailableError`。
 
 ### 坐标语义
 
@@ -143,6 +158,7 @@ element.assert_exists()      # 断言目标必须存在
 - `ElementNotFoundError`：立即执行动作时，必需元素不存在
 - `ElementTimeoutError`：等待必需元素时超时
 - `ImageNotFoundError`：图像目标未匹配到
+- `OverlayUnavailableError`：当前环境无法创建调试高亮 overlay
 - `__version__`：包根导出的已安装版本字符串
 
 ## 开发

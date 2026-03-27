@@ -1,6 +1,6 @@
 [project]
 name = "baihe-autogui"
-version = "0.1.7"
+version = "0.1.8"
 description = "A small GUI automation wrapper around pyautogui with a simple Auto -> Element -> Target flow"
 readme = "README.md"
 keywords = ["automation", "gui", "pyautogui", "desktop", "testing"]
