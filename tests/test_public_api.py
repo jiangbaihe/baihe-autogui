@@ -11,6 +11,7 @@ from baihe_autogui import (
     RegionTarget,
     Target,
     ValidationError,
+    __version__,
 )
 from baihe_autogui.core import gui
 
@@ -36,3 +37,8 @@ def test_core_gui_export():
     assert hasattr(gui, "click")
     assert hasattr(gui, "move_to")
     assert hasattr(gui, "right_click")
+
+
+def test_version_export():
+    assert isinstance(__version__, str)
+    assert __version__

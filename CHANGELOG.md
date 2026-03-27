@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Thin `gui` adapter layer for all `pyautogui` interactions
 - New `Element` actions: `move_to()`, `right_click()`, `double_click()`, `press()`, and `hotkey()`
 - Public exception types: `AutoGuiError`, `ValidationError`, `ElementNotFoundError`, `ElementTimeoutError`, and `ImageNotFoundError`
+- Public `__version__` export at package root
 - Example scripts under `examples/`
 - Public API regression tests
 - GitHub Actions workflow for tests, linting, and package builds
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Required-element failures now raise explicit element exceptions instead of generic built-ins
 - Project descriptions and documentation now describe the library as a lightweight wrapper rather than a heavy architecture
 - README, contributor notes, and CI now use the same `uv sync --dev` workflow
+- Package metadata now includes PyPI-facing keywords, classifiers, and project links
 
 ### Fixed
 - `locate_all()` image matches now use box centers instead of top-left coordinates

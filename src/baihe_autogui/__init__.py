@@ -1,3 +1,5 @@
+from importlib.metadata import PackageNotFoundError, version
+
 from .core.auto import Auto
 from .core.element import Element
 from .core.exceptions import (
@@ -15,19 +17,25 @@ from .core.target import (
     Target,
 )
 
+try:
+    __version__ = version("baihe-autogui")
+except PackageNotFoundError:
+    __version__ = "0.0.0"
+
 __all__ = [
     "Auto",
     "AutoGuiError",
     "Element",
     "ElementNotFoundError",
     "ElementTimeoutError",
-    "ValidationError",
-    "Point",
-    "Target",
-    "PointTarget",
-    "RegionTarget",
     "ImageTarget",
     "ImageNotFoundError",
+    "Point",
+    "PointTarget",
+    "RegionTarget",
+    "Target",
+    "ValidationError",
+    "__version__",
 ]
 
 

@@ -105,6 +105,7 @@ element.assert_exists()      # 断言目标必须存在
 - `ElementNotFoundError`：立即执行动作时，必需元素不存在
 - `ElementTimeoutError`：等待必需元素时超时
 - `ImageNotFoundError`：图像目标未匹配到
+- `__version__`：包根导出的已安装版本字符串
 
 ## 开发
 

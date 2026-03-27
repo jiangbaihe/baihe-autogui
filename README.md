@@ -103,6 +103,7 @@ element.assert_exists()  # Assert element must exist
 - `ElementNotFoundError` - A required element was missing for an immediate action
 - `ElementTimeoutError` - Waiting for a required element timed out
 - `ImageNotFoundError` - An image target could not be matched
+- `__version__` - Installed package version string exposed at the package root
 
 ## Development
 
