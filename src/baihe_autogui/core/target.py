@@ -1,3 +1,4 @@
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Tuple
@@ -11,6 +12,17 @@ from .types import ImageInput, OptionalRegion
 class Point:
     x: int
     y: int
+
+
+def _resolve_search_region(search_region: OptionalRegion) -> Tuple[int, int, int, int]:
+    screen_w, screen_h = pyautogui.size()
+    return search_region if search_region else (0, 0, screen_w, screen_h)
+
+
+def _point_from_box(box) -> Point:
+    if all(hasattr(box, attr) for attr in ("left", "top", "width", "height")):
+        return Point(box.left + box.width // 2, box.top + box.height // 2)
+    return Point(box.x, box.y)
 
 
 class Target(ABC):
@@ -35,14 +47,8 @@ class PointTarget(Target):
         self.y = y
         self.search_region = search_region
 
-    def _get_screen_size(self) -> Tuple[int, int]:
-        return pyautogui.size()
-
     def exists(self) -> bool:
-        screen_w, screen_h = self._get_screen_size()
-        sx, sy, sw, sh = (
-            self.search_region if self.search_region else (0, 0, screen_w, screen_h)
-        )
+        sx, sy, sw, sh = _resolve_search_region(self.search_region)
         return sx <= self.x < sx + sw and sy <= self.y < sy + sh
 
     def resolve(self) -> Point:
@@ -70,14 +76,11 @@ class RegionTarget(Target):
         self.height = height
         self.search_region = search_region
 
-    def _get_screen_size(self) -> Tuple[int, int]:
-        return pyautogui.size()
-
     def exists(self) -> bool:
-        screen_w, screen_h = self._get_screen_size()
-        sx, sy, sw, sh = (
-            self.search_region if self.search_region else (0, 0, screen_w, screen_h)
-        )
+        if self.width <= 0 or self.height <= 0:
+            return False
+
+        sx, sy, sw, sh = _resolve_search_region(self.search_region)
         in_x = sx <= self.x and self.x + self.width <= sx + sw
         in_y = sy <= self.y and self.y + self.height <= sy + sh
         return in_x and in_y
@@ -93,7 +96,6 @@ class RegionTarget(Target):
 
 class ImageNotFoundError(Exception):
     """图像未找到异常"""
-    pass
 
 
 class ImageTarget(Target):
@@ -115,9 +117,6 @@ class ImageTarget(Target):
 
     def _locate_with_retry(self) -> Point:
         """带重试的图像定位"""
-        import time
-
-        last_error = None
         for attempt in range(self.retry + 1):
             try:
                 location = pyautogui.locateCenterOnScreen(
@@ -128,30 +127,29 @@ class ImageTarget(Target):
                 if location is not None:
                     return Point(location.x, location.y)
             except pyautogui.ImageNotFoundException:
-                last_error = ImageNotFoundError(f"Image not found: {self.image}")
+                location = None
             if attempt < self.retry:
                 time.sleep(self.timeout)
-        raise last_error
+        raise ImageNotFoundError(f"Image not found: {self.image}")
 
     def _locate_all_with_retry(self) -> List[Point]:
         """带重试的图像定位，返回所有匹配"""
-        import time
-
-        last_error = None
         for attempt in range(self.retry + 1):
             try:
-                locations = pyautogui.locateAllOnScreen(
-                    self.image,
-                    confidence=self.confidence,
-                    region=self.search_region,
+                locations = list(
+                    pyautogui.locateAllOnScreen(
+                        self.image,
+                        confidence=self.confidence,
+                        region=self.search_region,
+                    )
                 )
-                if locations is not None:
-                    return [Point(loc.x, loc.y) for loc in locations]
+                if locations:
+                    return [_point_from_box(location) for location in locations]
             except pyautogui.ImageNotFoundException:
-                last_error = ImageNotFoundError(f"Image not found: {self.image}")
+                locations = []
             if attempt < self.retry:
                 time.sleep(self.timeout)
-        raise last_error
+        return []
 
     def exists(self) -> bool:
         try:

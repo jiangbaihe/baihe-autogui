@@ -82,6 +82,6 @@ element.assert_exists()  # Assert element must exist
 
 ## Architecture
 
-- **Immediate lookup**: Position cached at `locate()` time
-- **Subset semantics**: Target must be fully within search region
-- **Stateless Element**: Reuses cached position, no auto-relookup
+- `locate()` resolves lazily, only when an action needs the position
+- `locate_all()` snapshots matched image positions and reuses cached points
+- Targets must be fully within the search region

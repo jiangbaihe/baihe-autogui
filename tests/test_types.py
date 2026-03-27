@@ -1,9 +1,8 @@
 from baihe_autogui.core.types import (
+    ImageInput,
+    OptionalRegion,
     PointInput,
     RegionInput,
-    ImageInput,
-    LocateInput,
-    OptionalRegion,
 )
 
 

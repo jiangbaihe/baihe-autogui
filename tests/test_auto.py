@@ -1,14 +1,16 @@
+from unittest.mock import MagicMock, patch
+
+import pyautogui
 import pytest
-from unittest.mock import patch, MagicMock
+
 from baihe_autogui.core.auto import Auto
-from baihe_autogui.core.target import PointTarget, RegionTarget, ImageTarget, Point
+from baihe_autogui.core.target import ImageTarget, Point, PointTarget, RegionTarget
 
 
 class TestAuto:
     def test_auto_creation(self):
         auto = Auto()
-        assert auto._pause == 0.1
-        assert auto._failsafe is True
+        assert isinstance(auto, Auto)
 
     def test_locate_point(self):
         auto = Auto()
@@ -62,13 +64,11 @@ class TestAuto:
         assert isinstance(elements[0]._target, RegionTarget)
 
     @patch("baihe_autogui.core.target.pyautogui.locateAllOnScreen")
-    @patch("baihe_autogui.core.target.pyautogui.locateCenterOnScreen")
-    def test_locate_all_image(self, mock_center, mock_all):
-        mock_center.return_value = MagicMock(x=100, y=200)
+    def test_locate_all_image(self, mock_all):
         mock_all.return_value = [
-            MagicMock(x=100, y=200),
-            MagicMock(x=300, y=400),
-            MagicMock(x=500, y=600),
+            MagicMock(left=80, top=180, width=40, height=40),
+            MagicMock(left=260, top=360, width=80, height=80),
+            MagicMock(left=475, top=575, width=50, height=50),
         ]
         auto = Auto()
         elements = auto.locate_all("btn.png")
@@ -77,6 +77,13 @@ class TestAuto:
         assert elements[0]._cached_point == Point(100, 200)
         assert elements[1]._cached_point == Point(300, 400)
         assert elements[2]._cached_point == Point(500, 600)
+
+    @patch("baihe_autogui.core.target.pyautogui.locateAllOnScreen")
+    def test_locate_all_image_not_found_returns_empty_list(self, mock_all):
+        mock_all.side_effect = pyautogui.ImageNotFoundException()
+        auto = Auto()
+        elements = auto.locate_all("btn.png")
+        assert elements == []
 
     def test_locate_unsupported_type_raises(self):
         auto = Auto()

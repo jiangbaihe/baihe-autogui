@@ -1,7 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from baihe_autogui.core.element import Element
-from baihe_autogui.core.target import PointTarget, Point
+from baihe_autogui.core.target import Point, PointTarget
 
 
 class MockAuto:
@@ -14,7 +16,6 @@ class TestElement:
         auto = MockAuto()
         element = Element(target, auto)
         assert element._target is target
-        assert element._auto is auto
         assert element._required is True
 
     def test_if_exists_sets_required_false(self):
@@ -67,6 +68,15 @@ class TestElement:
         element = Element(target, MockAuto(), cached_point=cached)
         element.click()
         mock_click.assert_called_once_with(300, 400)
+
+    @patch("baihe_autogui.core.element.pyautogui.click")
+    def test_click_with_cached_point_skips_relookup(self, mock_click):
+        target = MagicMock()
+        target.exists.side_effect = AssertionError("cached point should skip relookup")
+        element = Element(target, cached_point=Point(300, 400))
+        element.click()
+        mock_click.assert_called_once_with(300, 400)
+        target.exists.assert_not_called()
 
     def test_wait_returns_self(self):
         target = PointTarget(100, 200)

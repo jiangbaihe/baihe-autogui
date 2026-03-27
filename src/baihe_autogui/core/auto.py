@@ -7,10 +7,6 @@ from .types import LocateInput, OptionalRegion
 
 
 class Auto:
-    def __init__(self):
-        self._pause = 0.1
-        self._failsafe = True
-
     def locate(
         self,
         target: LocateInput,
@@ -21,8 +17,7 @@ class Auto:
         retry: int = 0,
     ) -> Element:
         """定位目标，返回第一个匹配的 Element"""
-        t = self._create_target(target, region, confidence, timeout, retry)
-        return Element(t, self)
+        return Element(self._create_target(target, region, confidence, timeout, retry))
 
     def locate_all(
         self,
@@ -34,26 +29,13 @@ class Auto:
         retry: int = 0,
     ) -> List[Element]:
         """定位目标，返回所有匹配的 Element 列表"""
-        from .target import ImageTarget
-
         t = self._create_target(target, region, confidence, timeout, retry)
 
         if isinstance(t, ImageTarget):
-            points = t._locate_all_with_retry()
-            elements = []
-            for point in points:
-                new_target = ImageTarget(
-                    image=t.image,
-                    search_region=t.search_region,
-                    confidence=t.confidence,
-                    timeout=t.timeout,
-                    retry=t.retry,
-                )
-                elements.append(Element(new_target, self, cached_point=point))
-            return elements
+            return [Element(t, cached_point=point) for point in t._locate_all_with_retry()]
 
         # PointTarget 和 RegionTarget 只有 1 个
-        return [Element(t, self)]
+        return [Element(t)]
 
     def _create_target(
         self,
