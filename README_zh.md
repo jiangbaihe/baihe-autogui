@@ -107,6 +107,7 @@ auto.locate(target, *, region=None, confidence=0.8, timeout=0, retry=0)
 - 区域宽高必须大于 `0`
 - `locate([...])` 会按输入顺序尝试各个定位器，返回第一个命中的结果
 - `locate_all([...])` 会按输入顺序展开每个定位器的全部结果
+- `locate_all()` 会先对高度重叠的图像匹配结果去重，再返回 `Element` 列表
 
 ### Element 动作
 

@@ -172,6 +172,20 @@ class TestImageTarget:
         assert ImageTarget("btn.png")._locate_all_with_retry() == []
 
     @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
+    def test_image_target_locate_all_dedupes_heavily_overlapping_matches(
+        self, mock_locate_all
+    ):
+        mock_locate_all.return_value = [
+            MagicMock(left=80, top=180, width=40, height=40),
+            MagicMock(left=82, top=182, width=40, height=40),
+            MagicMock(left=260, top=360, width=80, height=80),
+        ]
+        assert ImageTarget("btn.png")._locate_all_regions_with_retry() == [
+            (80, 180, 40, 40),
+            (260, 360, 80, 80),
+        ]
+
+    @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
     def test_image_target_locate_all_accepts_path_input(self, mock_locate_all):
         mock_locate_all.return_value = []
         ImageTarget(Path("btn.png"))._locate_all_with_retry()

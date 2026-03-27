@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-03-27
+
+### Fixed
+- Deduplicated heavily overlapping image matches in `locate_all()` so OpenCV template matching does not return floods of near-identical results
+- Deduplicated repeated image hits across locator lists in `locate_all()` when multiple image templates match the same screen element
+
 ## [0.1.5] - 2026-03-27
 
 ### Fixed

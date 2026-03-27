@@ -102,6 +102,24 @@ class TestAuto:
         assert elements[2]._cached_point == Point(300, 400)
         assert isinstance(elements[3]._target, RegionTarget)
 
+    @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
+    def test_locate_all_target_list_dedupes_overlapping_image_matches(self, mock_all):
+        mock_all.side_effect = [
+            [
+                MagicMock(left=80, top=180, width=40, height=40),
+                MagicMock(left=82, top=182, width=40, height=40),
+            ],
+            [
+                MagicMock(left=81, top=181, width=40, height=40),
+                MagicMock(left=260, top=360, width=80, height=80),
+            ],
+        ]
+        auto = Auto()
+        elements = auto.locate_all(["primary.png", "fallback.png"])
+        assert len(elements) == 2
+        assert elements[0]._cached_region == (80, 180, 40, 40)
+        assert elements[1]._cached_region == (260, 360, 80, 80)
+
     def test_locate_all_point(self):
         auto = Auto()
         elements = auto.locate_all((100, 200))

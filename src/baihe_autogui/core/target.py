@@ -15,6 +15,56 @@ class Point:
     y: int
 
 
+def _region_area(region: Tuple[int, int, int, int]) -> int:
+    return region[2] * region[3]
+
+
+def _intersection_area(
+    left: Tuple[int, int, int, int], right: Tuple[int, int, int, int]
+) -> int:
+    left_x1, left_y1, left_w, left_h = left
+    right_x1, right_y1, right_w, right_h = right
+    left_x2 = left_x1 + left_w
+    left_y2 = left_y1 + left_h
+    right_x2 = right_x1 + right_w
+    right_y2 = right_y1 + right_h
+
+    overlap_w = min(left_x2, right_x2) - max(left_x1, right_x1)
+    overlap_h = min(left_y2, right_y2) - max(left_y1, right_y1)
+    if overlap_w <= 0 or overlap_h <= 0:
+        return 0
+    return overlap_w * overlap_h
+
+
+def _is_same_match_region(
+    left: Tuple[int, int, int, int],
+    right: Tuple[int, int, int, int],
+    *,
+    coverage_threshold: float = 0.8,
+) -> bool:
+    overlap = _intersection_area(left, right)
+    if overlap == 0:
+        return False
+    smaller_area = min(_region_area(left), _region_area(right))
+    return overlap / smaller_area >= coverage_threshold
+
+
+def _dedupe_match_regions(
+    regions: List[Tuple[int, int, int, int]],
+    *,
+    coverage_threshold: float = 0.8,
+) -> List[Tuple[int, int, int, int]]:
+    deduped: List[Tuple[int, int, int, int]] = []
+    for region in regions:
+        if any(
+            _is_same_match_region(region, kept, coverage_threshold=coverage_threshold)
+            for kept in deduped
+        ):
+            continue
+        deduped.append(region)
+    return deduped
+
+
 def _resolve_search_region(search_region: OptionalRegion) -> Tuple[int, int, int, int]:
     screen_w, screen_h = gui.size()
     return search_region if search_region else (0, 0, screen_w, screen_h)
@@ -169,7 +219,9 @@ class ImageTarget(Target):
                     )
                 )
                 if locations:
-                    return [_region_from_box(location) for location in locations]
+                    return _dedupe_match_regions(
+                        [_region_from_box(location) for location in locations]
+                    )
             except gui.image_not_found_exception:
                 locations = []
             if attempt < self.retry:

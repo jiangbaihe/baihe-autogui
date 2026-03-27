@@ -105,6 +105,7 @@ auto.locate(target, *, region=None, confidence=0.8, timeout=0, retry=0)
 - Region width and height must be greater than 0
 - Non-empty locator lists are tried in order for `locate()`
 - `locate_all()` flattens the results from each locator in input order
+- `locate_all()` deduplicates heavily overlapping image matches before returning `Element` objects
 
 ### Element Actions
 

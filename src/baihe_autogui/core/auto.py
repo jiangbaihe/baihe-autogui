@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 from .element import Element
 from .exceptions import ValidationError
@@ -9,6 +9,7 @@ from .target import (
     PointTarget,
     RegionTarget,
     Target,
+    _dedupe_match_regions,
     _point_from_region,
 )
 from .types import LocateInput, OptionalRegion, SingleLocateInput
@@ -54,19 +55,22 @@ class Auto:
         retry: int = 0,
     ) -> List[Element]:
         elements: List[Element] = []
+        matched_regions: List[Tuple[int, int, int, int]] = []
         for t in self._create_targets(target, region, confidence, timeout, retry):
             if isinstance(t, ImageTarget):
-                elements.extend(
-                    [
+                for match_region in t._locate_all_regions_with_retry():
+                    deduped = _dedupe_match_regions(matched_regions + [match_region])
+                    if len(deduped) == len(matched_regions):
+                        continue
+                    matched_regions.append(match_region)
+                    elements.append(
                         Element(
                             t,
                             auto=self,
                             cached_point=_point_from_region(match_region),
                             cached_region=match_region,
                         )
-                        for match_region in t._locate_all_regions_with_retry()
-                    ]
-                )
+                    )
             else:
                 elements.append(Element(t, auto=self))
 
