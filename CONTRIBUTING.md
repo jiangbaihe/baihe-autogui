@@ -30,3 +30,4 @@ uv build
 - Describe the behavior change clearly.
 - Mention any exception or API contract changes.
 - Include test coverage for bug fixes and new features.
+- Use `RELEASING.md` when preparing a tagged release.

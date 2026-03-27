@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions workflow for tests, linting, and package builds
 - Contributor guide in `CONTRIBUTING.md`
 - Declared `dev` dependency group for local testing and linting
+- Tag-driven release workflow for PyPI publishing
+- Short release checklist in `RELEASING.md`
 
 ### Changed
 - `locate_all()` now snapshots image-match points and reuses cached coordinates
