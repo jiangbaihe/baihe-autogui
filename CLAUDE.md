@@ -17,7 +17,7 @@
 ### 已发布状态
 
 - PyPI 项目：`baihe-autogui`
-- 当前已发布版本：`0.1.6`
+- 当前已发布版本：`0.1.7`
 - 发布方式：GitHub Actions + PyPI Trusted Publishing
 
 ### 当前工作区状态
@@ -41,6 +41,7 @@ git status --short --branch
 - 图像定位依赖 `opencv-python` 作为运行时依赖，避免用户在使用 `confidence=...` 时额外手动安装 OpenCV
 - `Path` 类型的图像输入会在内部标准化为字符串，避免 OpenCV 匹配路径下的类型错误
 - `locate_all()` 会对高度重叠或跨模板重复命中的图像结果去重，避免海量重复 `Element`
+- 已加入基于真实关闭标签按钮素材的回归测试，覆盖原生 `pyautogui` 原始命中与库层去重后的最终结果
 
 不要假设当前工作区永远带着这组未提交改动；应以实时 `git status` 为准。
 

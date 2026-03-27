@@ -36,28 +36,49 @@ def _intersection_area(
     return overlap_w * overlap_h
 
 
+def _region_center(region: Tuple[int, int, int, int]) -> Tuple[float, float]:
+    x, y, width, height = region
+    return (x + width / 2, y + height / 2)
+
+
 def _is_same_match_region(
     left: Tuple[int, int, int, int],
     right: Tuple[int, int, int, int],
     *,
     coverage_threshold: float = 0.8,
+    center_offset_ratio: float = 0.5,
 ) -> bool:
     overlap = _intersection_area(left, right)
-    if overlap == 0:
-        return False
-    smaller_area = min(_region_area(left), _region_area(right))
-    return overlap / smaller_area >= coverage_threshold
+    if overlap > 0:
+        smaller_area = min(_region_area(left), _region_area(right))
+        if overlap / smaller_area >= coverage_threshold:
+            return True
+
+    left_center_x, left_center_y = _region_center(left)
+    right_center_x, right_center_y = _region_center(right)
+    max_dx = min(left[2], right[2]) * center_offset_ratio
+    max_dy = min(left[3], right[3]) * center_offset_ratio
+    return (
+        abs(left_center_x - right_center_x) <= max_dx
+        and abs(left_center_y - right_center_y) <= max_dy
+    )
 
 
 def _dedupe_match_regions(
     regions: List[Tuple[int, int, int, int]],
     *,
     coverage_threshold: float = 0.8,
+    center_offset_ratio: float = 0.5,
 ) -> List[Tuple[int, int, int, int]]:
     deduped: List[Tuple[int, int, int, int]] = []
     for region in regions:
         if any(
-            _is_same_match_region(region, kept, coverage_threshold=coverage_threshold)
+            _is_same_match_region(
+                region,
+                kept,
+                coverage_threshold=coverage_threshold,
+                center_offset_ratio=center_offset_ratio,
+            )
             for kept in deduped
         ):
             continue

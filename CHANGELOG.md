@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-03-27
+
+### Fixed
+- Tightened `locate_all()` image-match deduplication so small OpenCV matches that drift by 1-2 pixels are still merged into one logical result
+- Added regression tests based on real close-tab button fixtures to verify both raw `pyautogui` behavior and the deduplicated `Auto.locate_all()` result
+
 ## [0.1.6] - 2026-03-27
 
 ### Fixed
