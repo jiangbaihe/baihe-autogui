@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-03-27
+
 ### Added
 - Thin `gui` adapter layer for all `pyautogui` interactions
 - New `Element` actions: `move_to()`, `right_click()`, `double_click()`, `press()`, and `hotkey()`
@@ -35,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cached points now bypass unnecessary re-lookup during actions
 - `locate_all()` image matches now also retain their matched regions for nested searches
 - Image-not-found handling is consistent for both single and multiple image searches
+- Deferred `pyautogui` imports so package imports and tests work in headless CI environments
 
 ## [0.1.0] - 2026-03-27
 

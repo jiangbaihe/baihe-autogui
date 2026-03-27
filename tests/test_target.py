@@ -1,9 +1,9 @@
 from unittest.mock import MagicMock, patch
 
-import pyautogui
 import pytest
 
 from baihe_autogui.core.exceptions import ImageNotFoundError
+from baihe_autogui.core.gui import gui
 from baihe_autogui.core.target import (
     ImageTarget,
     Point,
@@ -114,7 +114,7 @@ class TestImageTarget:
 
     @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_resolve_not_found(self, mock_locate):
-        mock_locate.side_effect = pyautogui.ImageNotFoundException()
+        mock_locate.side_effect = gui.image_not_found_exception()
         with pytest.raises(ImageNotFoundError):
             ImageTarget("btn.png").resolve()
 
@@ -125,7 +125,7 @@ class TestImageTarget:
 
     @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_exists_false(self, mock_locate):
-        mock_locate.side_effect = pyautogui.ImageNotFoundException()
+        mock_locate.side_effect = gui.image_not_found_exception()
         assert ImageTarget("btn.png").exists() is False
 
     @patch("baihe_autogui.core.target.gui.locate_on_screen")
@@ -137,8 +137,8 @@ class TestImageTarget:
     @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_retry(self, mock_locate):
         mock_locate.side_effect = [
-            pyautogui.ImageNotFoundException(),
-            pyautogui.ImageNotFoundException(),
+            gui.image_not_found_exception(),
+            gui.image_not_found_exception(),
             MagicMock(left=80, top=180, width=40, height=40),
         ]
         target = ImageTarget("btn.png", retry=2, timeout=0.01)
@@ -163,5 +163,5 @@ class TestImageTarget:
 
     @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
     def test_image_target_locate_all_not_found_returns_empty_list(self, mock_locate_all):
-        mock_locate_all.side_effect = pyautogui.ImageNotFoundException()
+        mock_locate_all.side_effect = gui.image_not_found_exception()
         assert ImageTarget("btn.png")._locate_all_with_retry() == []

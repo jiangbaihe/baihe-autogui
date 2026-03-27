@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock, patch
 
-import pyautogui
 import pytest
 
 from baihe_autogui.core.auto import Auto
 from baihe_autogui.core.exceptions import ValidationError
+from baihe_autogui.core.gui import gui
 from baihe_autogui.core.target import ImageTarget, Point, PointTarget, RegionTarget
 
 
@@ -84,7 +84,7 @@ class TestAuto:
 
     @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
     def test_locate_all_image_not_found_returns_empty_list(self, mock_all):
-        mock_all.side_effect = pyautogui.ImageNotFoundException()
+        mock_all.side_effect = gui.image_not_found_exception()
         auto = Auto()
         elements = auto.locate_all("btn.png")
         assert elements == []
