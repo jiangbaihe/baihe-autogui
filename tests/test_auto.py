@@ -78,6 +78,9 @@ class TestAuto:
         assert elements[0]._cached_point == Point(100, 200)
         assert elements[1]._cached_point == Point(300, 400)
         assert elements[2]._cached_point == Point(500, 600)
+        assert elements[0]._cached_region == (80, 180, 40, 40)
+        assert elements[1]._cached_region == (260, 360, 80, 80)
+        assert elements[2]._cached_region == (475, 575, 50, 50)
 
     @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
     def test_locate_all_image_not_found_returns_empty_list(self, mock_all):

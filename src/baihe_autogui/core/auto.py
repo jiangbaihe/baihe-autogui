@@ -3,7 +3,7 @@ from typing import List
 
 from .element import Element
 from .exceptions import ValidationError
-from .target import ImageTarget, PointTarget, RegionTarget, Target
+from .target import ImageTarget, PointTarget, RegionTarget, Target, _point_from_region
 from .types import LocateInput, OptionalRegion
 
 
@@ -30,8 +30,10 @@ class Auto:
         timeout: float = 0,
         retry: int = 0,
     ) -> Element:
-        """定位目标，返回第一个匹配的 Element"""
-        return Element(self._create_target(target, region, confidence, timeout, retry))
+        return Element(
+            self._create_target(target, region, confidence, timeout, retry),
+            auto=self,
+        )
 
     def locate_all(
         self,
@@ -42,14 +44,20 @@ class Auto:
         timeout: float = 0,
         retry: int = 0,
     ) -> List[Element]:
-        """定位目标，返回所有匹配的 Element 列表"""
         t = self._create_target(target, region, confidence, timeout, retry)
 
         if isinstance(t, ImageTarget):
-            return [Element(t, cached_point=point) for point in t._locate_all_with_retry()]
+            return [
+                Element(
+                    t,
+                    auto=self,
+                    cached_point=_point_from_region(match_region),
+                    cached_region=match_region,
+                )
+                for match_region in t._locate_all_regions_with_retry()
+            ]
 
-        # PointTarget and RegionTarget only produce one result.
-        return [Element(t)]
+        return [Element(t, auto=self)]
 
     def _create_target(
         self,

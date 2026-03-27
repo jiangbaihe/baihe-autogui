@@ -82,6 +82,9 @@ class TestRegionTarget:
         mock_size.return_value = (1920, 1080)
         assert RegionTarget(100, 200, 300, 400).resolve() == Point(250, 400)
 
+    def test_region_target_resolve_region(self):
+        assert RegionTarget(100, 200, 300, 400).resolve_region() == (100, 200, 300, 400)
+
 
 class TestImageTarget:
     def test_image_target_creation(self):
@@ -104,43 +107,48 @@ class TestImageTarget:
         assert target.timeout == 0.5
         assert target.retry == 3
 
-    @patch("baihe_autogui.core.target.gui.locate_center_on_screen")
+    @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_resolve_success(self, mock_locate):
-        mock_locate.return_value = MagicMock(x=100, y=200)
+        mock_locate.return_value = MagicMock(left=80, top=180, width=40, height=40)
         assert ImageTarget("btn.png").resolve() == Point(100, 200)
 
-    @patch("baihe_autogui.core.target.gui.locate_center_on_screen")
+    @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_resolve_not_found(self, mock_locate):
         mock_locate.side_effect = pyautogui.ImageNotFoundException()
         with pytest.raises(ImageNotFoundError):
             ImageTarget("btn.png").resolve()
 
-    @patch("baihe_autogui.core.target.gui.locate_center_on_screen")
+    @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_exists_true(self, mock_locate):
-        mock_locate.return_value = MagicMock(x=100, y=200)
+        mock_locate.return_value = MagicMock(left=80, top=180, width=40, height=40)
         assert ImageTarget("btn.png").exists() is True
 
-    @patch("baihe_autogui.core.target.gui.locate_center_on_screen")
+    @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_exists_false(self, mock_locate):
         mock_locate.side_effect = pyautogui.ImageNotFoundException()
         assert ImageTarget("btn.png").exists() is False
 
-    @patch("baihe_autogui.core.target.gui.locate_center_on_screen")
+    @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_resolve_none_raises_not_found(self, mock_locate):
         mock_locate.return_value = None
         with pytest.raises(ImageNotFoundError):
             ImageTarget("btn.png").resolve()
 
-    @patch("baihe_autogui.core.target.gui.locate_center_on_screen")
+    @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_retry(self, mock_locate):
         mock_locate.side_effect = [
             pyautogui.ImageNotFoundException(),
             pyautogui.ImageNotFoundException(),
-            MagicMock(x=100, y=200),
+            MagicMock(left=80, top=180, width=40, height=40),
         ]
         target = ImageTarget("btn.png", retry=2, timeout=0.01)
         assert target.resolve() == Point(100, 200)
         assert mock_locate.call_count == 3
+
+    @patch("baihe_autogui.core.target.gui.locate_on_screen")
+    def test_image_target_resolve_region_success(self, mock_locate):
+        mock_locate.return_value = MagicMock(left=80, top=180, width=40, height=40)
+        assert ImageTarget("btn.png").resolve_region() == (80, 180, 40, 40)
 
     @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
     def test_image_target_locate_all_returns_centers(self, mock_locate_all):

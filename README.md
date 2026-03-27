@@ -37,6 +37,9 @@ auto.locate('button.png').if_exists().click()
 auto.locate('button.png').wait_until_exists(timeout=5).click()
 auto.locate('button.png').assert_exists().click()
 
+# Nested search inside a matched region
+auto.locate('dialog.png').locate('confirm.png').click()
+
 # Get all matches
 for e in auto.locate_all('button.png'):
     e.click()
@@ -59,6 +62,7 @@ Chainable action wrapper created by `Auto.locate()`:
 - `move_to()` / `click()` / `right_click()` / `double_click()` - Mouse actions
 - `wait()` / `write()` - General actions
 - `press()` / `hotkey()` - Keyboard actions
+- `locate()` / `locate_all()` - Scope a follow-up search to the current image or region
 - `if_exists()` / `wait_until_exists()` / `assert_exists()` - Conditional methods
 
 ### Auto
@@ -92,10 +96,15 @@ element.wait(seconds)     # Wait
 element.write(text)       # Type text
 element.press("enter")    # Press a single key
 element.hotkey("ctrl", "c")  # Press a key combination
+element.locate("inner.png")  # Search inside the current image or region
+element.locate_all("item.png")  # Search all matches inside the current image or region
 element.if_exists()      # Skip if element doesn't exist
 element.wait_until_exists(timeout=10)  # Wait until appears
 element.assert_exists()  # Assert element must exist
 ```
+
+Nested locate uses the current image match box or region tuple as the next `region=...`.
+Point targets do not define an area, so they cannot be used as an outer scope.
 
 ### Exceptions
 

@@ -8,7 +8,7 @@ from baihe_autogui.core.exceptions import (
     ElementTimeoutError,
     ValidationError,
 )
-from baihe_autogui.core.target import Point, PointTarget
+from baihe_autogui.core.target import Point, PointTarget, RegionTarget
 
 
 class MockAuto:
@@ -180,4 +180,43 @@ class TestElement:
         element = Element(PointTarget(3000, 3000), MockAuto())
         with pytest.raises(ElementTimeoutError):
             element.wait_until_exists(timeout=0)
+
+    def test_nested_locate_scopes_to_region_target(self):
+        auto = MagicMock()
+        nested = object()
+        auto.locate.return_value = nested
+        element = Element(RegionTarget(10, 20, 100, 80), auto=auto)
+
+        result = element.locate("inner.png", confidence=0.9, timeout=0.2, retry=2)
+
+        assert result is nested
+        auto.locate.assert_called_once_with(
+            "inner.png",
+            region=(10, 20, 100, 80),
+            confidence=0.9,
+            timeout=0.2,
+            retry=2,
+        )
+
+    def test_nested_locate_all_scopes_to_cached_region(self):
+        auto = MagicMock()
+        nested = [object()]
+        auto.locate_all.return_value = nested
+        element = Element(MagicMock(), auto=auto, cached_region=(50, 60, 70, 80))
+
+        result = element.locate_all("inner.png")
+
+        assert result is nested
+        auto.locate_all.assert_called_once_with(
+            "inner.png",
+            region=(50, 60, 70, 80),
+            confidence=0.8,
+            timeout=0,
+            retry=0,
+        )
+
+    def test_nested_locate_raises_for_point_target(self):
+        element = Element(PointTarget(100, 200), MockAuto())
+        with pytest.raises(ValidationError, match="nested locate"):
+            element.locate("inner.png")
 

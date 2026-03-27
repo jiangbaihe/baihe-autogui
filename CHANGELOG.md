@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Thin `gui` adapter layer for all `pyautogui` interactions
 - New `Element` actions: `move_to()`, `right_click()`, `double_click()`, `press()`, and `hotkey()`
+- Nested `Element.locate()` and `Element.locate_all()` for searches scoped to the current image or region
 - Public exception types: `AutoGuiError`, `ValidationError`, `ElementNotFoundError`, `ElementTimeoutError`, and `ImageNotFoundError`
 - Public `__version__` export at package root
 - Example scripts under `examples/`
@@ -32,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - `locate_all()` image matches now use box centers instead of top-left coordinates
 - Cached points now bypass unnecessary re-lookup during actions
+- `locate_all()` image matches now also retain their matched regions for nested searches
 - Image-not-found handling is consistent for both single and multiple image searches
 
 ## [0.1.0] - 2026-03-27

@@ -41,6 +41,19 @@ class PyAutoGuiAdapter:
             region=region,
         )
 
+    def locate_on_screen(
+        self,
+        image,
+        *,
+        confidence: float,
+        region: Optional[Tuple[int, int, int, int]],
+    ):
+        return pyautogui.locateOnScreen(
+            image,
+            confidence=confidence,
+            region=region,
+        )
+
     def locate_all_on_screen(
         self,
         image,

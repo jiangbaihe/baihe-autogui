@@ -4,6 +4,7 @@ from typing import Any, Optional
 from .exceptions import ElementNotFoundError, ElementTimeoutError, ValidationError
 from .gui import gui
 from .target import Point, Target
+from .types import LocateInput, OptionalRegion
 
 
 class Element:
@@ -12,10 +13,13 @@ class Element:
         target: Target,
         auto: Any = None,
         cached_point: Optional[Point] = None,
+        cached_region: OptionalRegion = None,
     ):
         self._target = target
+        self._auto = auto
         self._required = True
         self._cached_point = cached_point
+        self._cached_region = cached_region
 
     def _exists(self) -> bool:
         return self._cached_point is not None or self._target.exists()
@@ -31,6 +35,24 @@ class Element:
         if self._required:
             raise ElementNotFoundError("Element does not exist")
         return None
+
+    def _resolve_scope_region(self) -> OptionalRegion:
+        if self._cached_region is not None:
+            return self._cached_region
+
+        region = self._target.resolve_region()
+        if region is None:
+            raise ValidationError(
+                "nested locate requires an image or region target as the outer scope"
+            )
+        return region
+
+    def _get_auto(self):
+        if self._auto is None:
+            from .auto import Auto
+
+            self._auto = Auto()
+        return self._auto
 
     def if_exists(self) -> "Element":
         """Skip later actions when the target does not exist."""
@@ -107,3 +129,37 @@ class Element:
             raise ValidationError("hotkey requires at least one key")
         gui.hotkey(*keys)
         return self
+
+    def locate(
+        self,
+        target: LocateInput,
+        *,
+        confidence: float = 0.8,
+        timeout: float = 0,
+        retry: int = 0,
+    ) -> "Element":
+        region = self._resolve_scope_region()
+        return self._get_auto().locate(
+            target,
+            region=region,
+            confidence=confidence,
+            timeout=timeout,
+            retry=retry,
+        )
+
+    def locate_all(
+        self,
+        target: LocateInput,
+        *,
+        confidence: float = 0.8,
+        timeout: float = 0,
+        retry: int = 0,
+    ):
+        region = self._resolve_scope_region()
+        return self._get_auto().locate_all(
+            target,
+            region=region,
+            confidence=confidence,
+            timeout=timeout,
+            retry=retry,
+        )

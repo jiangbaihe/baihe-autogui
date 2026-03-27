@@ -37,6 +37,9 @@ auto.locate("button.png").if_exists().click()
 auto.locate("button.png").wait_until_exists(timeout=5).click()
 auto.locate("button.png").assert_exists().click()
 
+# 在外层匹配区域内继续查找
+auto.locate("dialog.png").locate("confirm.png").click()
+
 # 获取所有匹配项
 for element in auto.locate_all("button.png"):
     element.click()
@@ -61,6 +64,7 @@ for element in auto.locate_all("button.png"):
 - `move_to()` / `click()` / `right_click()` / `double_click()`：鼠标动作
 - `wait()` / `write()`：通用动作
 - `press()` / `hotkey()`：键盘动作
+- `locate()` / `locate_all()`：在当前图像或区域范围内继续查找
 - `if_exists()` / `wait_until_exists()` / `assert_exists()`：条件控制
 
 ### Auto
@@ -94,10 +98,15 @@ element.wait(seconds)        # 等待
 element.write(text)          # 输入文本
 element.press("enter")       # 按下单个按键
 element.hotkey("ctrl", "c")  # 按下组合键
+element.locate("inner.png")  # 在当前图像或区域内继续查找
+element.locate_all("item.png")  # 在当前图像或区域内查找全部匹配项
 element.if_exists()          # 目标不存在时跳过后续动作
 element.wait_until_exists(timeout=10)  # 等待目标出现
 element.assert_exists()      # 断言目标必须存在
 ```
+
+嵌套 locate 会把当前图像匹配框或区域元组作为下一次搜索的 `region=...`。
+点目标本身不定义面积，因此不能作为外层搜索范围。
 
 ### 异常
 
