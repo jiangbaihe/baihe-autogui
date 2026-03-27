@@ -34,6 +34,10 @@ jobs:
       - name: Build package
         run: uv build
 
+      - name: Smoke test built wheel
+        run: |
+          uv run --python 3.8 --no-project --with ./dist/*.whl python scripts/smoke_import.py
+
       - name: Upload distribution artifacts
         uses: actions/upload-artifact@v4
         with:

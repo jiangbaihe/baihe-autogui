@@ -115,6 +115,7 @@ uv build
 ```
 
 GitHub Actions runs the same checks on pushes and pull requests with Python 3.8.
+Built wheels are smoke-tested through a clean virtual environment before release.
 Contribution notes live in [CONTRIBUTING.md](CONTRIBUTING.md).
 Release notes live in [RELEASING.md](RELEASING.md).
 

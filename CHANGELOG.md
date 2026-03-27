@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Declared `dev` dependency group for local testing and linting
 - Tag-driven release workflow for PyPI publishing
 - Short release checklist in `RELEASING.md`
+- Wheel smoke import check script and workflow coverage
 
 ### Changed
 - `locate_all()` now snapshots image-match points and reuses cached coordinates

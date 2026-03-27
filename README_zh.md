@@ -116,7 +116,7 @@ uv run ruff check .
 uv build
 ```
 
-GitHub Actions 会在 `push` 和 `pull_request` 时使用 Python 3.8 运行同样的检查。协作说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+GitHub Actions 会在 `push` 和 `pull_request` 时使用 Python 3.8 运行同样的检查。发布前还会在一个干净虚拟环境里安装构建出的 wheel，并做一次最小导入校验。协作说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 发布说明见 [RELEASING.md](RELEASING.md)。
 
 ## 设计原则

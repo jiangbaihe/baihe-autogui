@@ -15,6 +15,12 @@ uv run ruff check .
 uv build
 ```
 
+4. Optionally run the wheel smoke check locally:
+
+```bash
+uv run --python 3.8 --no-project --with ./dist/*.whl python scripts/smoke_import.py
+```
+
 ## Publish flow
 
 1. Commit the release changes.
@@ -27,7 +33,8 @@ git push origin v0.1.1
 ```
 
 4. GitHub Actions will run the `Release` workflow.
-5. If PyPI trusted publishing is configured for this repository, the workflow will upload `dist/` to PyPI.
+5. The workflow will also install the built wheel into a clean virtual environment and run a smoke import check.
+6. If PyPI trusted publishing is configured for this repository, the workflow will upload `dist/` to PyPI.
 
 ## PyPI setup note
 
