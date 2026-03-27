@@ -1,130 +1,304 @@
 # CLAUDE.md
 
-本文件为 Claude Code (claude.ai/code) 在本仓库中工作时提供指导。
+本文件用于帮助新的代码助手或新设备上的会话快速接手本仓库，尽量减少上下文缺失。
 
-## 项目概述
+## 1. 项目定位
 
-`baihe-autogui` 是一个基于 `pyautogui` 的 Python GUI 自动化框架，采用 **Target + Element + Auto** 的多态链式架构。
+`baihe-autogui` 是一个基于 `pyautogui` 的轻量 GUI 自动化库，核心目标是：
 
-## 常用命令
+- 用尽可能简单的 API 提供常见 GUI 自动化能力
+- 保持清晰的 `Auto -> Element -> Target` 调用链
+- 避免过度抽象，优先让使用方式直观
+
+这是一个库项目，不是完整应用。重点在 API 设计、定位语义、链式交互体验和发布稳定性。
+
+## 2. 当前状态快照
+
+### 已发布状态
+
+- PyPI 项目：`baihe-autogui`
+- 当前已发布版本：`0.1.3`
+- 发布方式：GitHub Actions + PyPI Trusted Publishing
+
+### 当前工作区状态
+
+如果当前工作区不是干净的，请优先运行：
 
 ```bash
-# 安装依赖
-uv sync
+git status --short --branch
+```
 
-# 运行包
-uv run baihe-autogui
+建议同时核对：
 
-# 添加依赖
-uv add <package>
+- `pyproject.toml` 中的当前版本号
+- `git log --oneline --decorate -5`
+- `git tag --list`
 
-# 移除依赖
-uv remove <package>
+最近一个重要功能增量是：
 
-# 构建可分发包
+- `locate()` / `locate_all()` 在保留“单个多类型定位器”能力的基础上，新增支持“混合定位器列表”
+- 对应的英文 / 中文 README 与测试已经同步覆盖
+
+不要假设当前工作区永远带着这组未提交改动；应以实时 `git status` 为准。
+
+## 3. 技术约束
+
+- Python 版本锁定为 `==3.8.*`
+- 构建工具：`uv`
+- 构建后端：`uv_build`
+- 代码质量工具：`ruff`
+- 测试工具：`pytest`
+
+这些约束在 [pyproject.toml](pyproject.toml) 中定义，不要轻易放宽版本范围，除非明确要做兼容性策略调整。
+
+## 4. 常用命令
+
+### 基础开发
+
+```bash
+uv sync --dev
+uv run pytest -q
+uv run ruff check .
 uv build
-
-# 代码质量检查
-ruff check src/
-
-# 自动修复
-ruff check --fix src/
-
-# 运行测试
-pytest tests/
-
-# 运行单个测试文件
-pytest tests/test_auto.py
-
-# 运行单个测试函数
-pytest tests/test_auto.py::TestAuto::test_locate_point
 ```
 
-## 技术要求
+### 烟雾测试
 
-- **Python 版本**：`==3.8.*`（锁定版本，兼容 Windows 7）
-- **代码质量工具**：ruff（配置在 `pyproject.toml`）
+```bash
+uv run --python 3.8 --no-project --with ./dist/*.whl python scripts/smoke_import.py
+```
 
-## 核心架构
+在 PowerShell 下，`./dist/*.whl` 可能不会自动展开；必要时先解析出具体 wheel 路径再传给 `uv run --with`。
 
-### Target（目标）
-定位抽象基类，子类实现：
-- `PointTarget` - 点坐标定位
-- `RegionTarget` - 区域定位（返回中心点）
-- `ImageTarget` - 图像匹配定位
+### 其他常用命令
 
-所有 Target 支持 `search_region` 参数，子集语义判断存在性。
+```bash
+uv add <package>
+uv remove <package>
+uv run pytest tests/test_auto.py
+uv run pytest tests/test_auto.py::TestAuto::test_locate_point
+```
 
-### Element（元素）
-Target + Action 的链式封装。`Element` 由 `Auto.locate()` 创建，支持：
-- `click()` / `wait()` / `write()` - 链式操作
-- `if_exists()` / `wait_until_exists()` / `assert_exists()` - 条件方法
+## 5. 仓库重点文件
 
-### Auto（入口）
-自动化入口，`locate()` 返回一个 Element；`locate_all()` 返回 Element 列表，图像未找到时返回空列表 `[]`。`locate_all()` 的图像匹配结果会被快照缓存，后续复用该缓存坐标。
+### 代码
 
-`Auto` 默认配置：
-- `_pause = 0.1` - pyautogui 操作间隔
-- `_failsafe = True` - 启用故障安全（鼠标移到角落终止）
+- `src/baihe_autogui/core/auto.py`
+  负责 `locate()` / `locate_all()` 的输入解析与目标创建
+- `src/baihe_autogui/core/element.py`
+  负责链式动作、条件控制、嵌套定位
+- `src/baihe_autogui/core/target.py`
+  负责点、区域、图像等 Target 的解析语义
+- `src/baihe_autogui/core/types.py`
+  负责公开输入类型别名
 
-### API 示例
+### 测试
+
+- `tests/test_auto.py`
+- `tests/test_element.py`
+- `tests/test_target.py`
+- `tests/test_types.py`
+
+### 文档 / 发布
+
+- `README.md`
+- `README_zh.md`
+- `CHANGELOG.md`
+- `RELEASING.md`
+- `.github/workflows/release.yml`
+
+## 6. 核心架构
+
+### Target
+
+Target 描述“如何找到目标”。
+
+当前主要类型：
+
+- `PointTarget`
+- `RegionTarget`
+- `ImageTarget`
+- `MultiTarget`
+
+其中 `MultiTarget` 是“按顺序回退尝试多个定位器”的组合目标，用来支持：
+
 ```python
-from baihe_autogui import Auto
-
-auto = Auto()
-
-# 定位方式
-auto.locate((100, 200))              # 点坐标
-auto.locate((100, 200, 80, 30))      # 区域
-auto.locate('btn.png')                # 图像
-auto.locate('btn.png', region=(0,0,800,600))  # 指定搜索区域
-auto.locate('btn.png', confidence=0.9, retry=3, timeout=0.5)  # 图像参数
-
-# 链式操作
-auto.locate('btn.png').click().wait(0.5).write('hello')
-
-# 条件执行
-auto.locate('btn.png').if_exists().click()
-auto.locate('btn.png').wait_until_exists(timeout=5).click()
-auto.locate('btn.png').assert_exists().click()
-
-# 获取所有匹配
-for e in auto.locate_all('btn.png'):
-    e.click()
+auto.locate(["primary.png", "fallback.png", (100, 200)])
 ```
 
-### 坐标语义
-`region=` 参数限制搜索区域，但**不切换为局部坐标系**。图像匹配结果始终是屏幕绝对坐标，嵌套 `locate()` 复用外层绝对区域。所有鼠标操作（`click()`、`move_to()` 等）均使用绝对屏幕坐标。
+### Element
 
-## 项目结构
+`Element` 是链式动作包装器，用来承接：
 
+- 鼠标动作：`move_to()` / `click()` / `right_click()` / `double_click()`
+- 键盘动作：`write()` / `press()` / `hotkey()`
+- 条件动作：`if_exists()` / `wait_until_exists()` / `assert_exists()`
+- 嵌套定位：`locate()` / `locate_all()`
+
+### Auto
+
+`Auto` 是用户入口。
+
+当前语义：
+
+- `locate(single_locator)`：返回一个 `Element`
+- `locate_all(single_locator)`：返回一个 `Element` 列表
+- `locate(locator_list)`：按输入顺序尝试多个定位器，返回第一个命中的 `Element`
+- `locate_all(locator_list)`：按输入顺序展开每个定位器的结果并合并返回
+
+## 7. 已经拍板的语义
+
+这些属于项目内已经明确的设计决定，后续改动时应默认延续：
+
+### 1. 坐标语义是绝对坐标
+
+- `region=(x, y, w, h)` 只限制搜索区域
+- 不会切换到局部坐标系
+- 图像匹配结果始终是屏幕绝对坐标
+- 鼠标动作也始终使用绝对屏幕坐标
+
+### 2. `locate_all()` 的图像结果会缓存
+
+- 图像匹配结果会快照为缓存点位 / 区域
+- 后续 `Element` 动作复用缓存
+- 避免重复查找导致行为漂移
+
+### 3. Target 的存在性采用“完整落入搜索区域”语义
+
+- 点必须在区域内
+- 区域必须完整落在区域内
+- 不是“只要有交集就算存在”
+
+### 4. 发布工作流保持无头
+
+发布工作流不依赖有头桌面环境。
+
+原因：
+
+- 发布链路要尽量简单稳定
+- 单元测试应通过 mock 规避真实 GUI 依赖
+- 真正的 GUI 集成测试如果以后要做，应该独立成单独 workflow，而不是污染发布流程
+
+### 5. 新增的“定位器列表”能力不替换旧能力
+
+必须保留现有单个定位器输入：
+
+- `(x, y)`
+- `(x, y, w, h)`
+- `"image.png"` / `Path(...)` / `bytes`
+
+新能力只是额外支持：
+
+```python
+[
+    (100, 200),
+    (100, 200, 300, 400),
+    "button.png",
+]
 ```
-src/baihe_autogui/
-├── __init__.py           # 主包导出
-└── core/
-    ├── auto.py           # Auto 入口
-    ├── element.py        # Element 类
-    ├── target.py         # Target 基类与实现
-    └── types.py          # 类型别名
-tests/
-    ├── test_auto.py      # Auto 测试
-    ├── test_element.py   # Element 测试
-    ├── test_target.py    # Target 测试
-    └── test_types.py     # 类型测试
+
+### 6. 列表语义已经确定
+
+- `locate([...])`：按输入顺序回退尝试
+- `locate_all([...])`：按输入顺序展开全部结果
+- 空列表不是合法输入，应抛出 `ValidationError`
+
+## 8. 发布与版本管理
+
+### 发布流程
+
+发布依赖 `.github/workflows/release.yml`：
+
+- `push` 以 `v*` 命名的 tag 会触发发布
+- `build` job 会执行：
+  - `uv sync --locked --dev`
+  - `uv run pytest -q`
+  - `uv run ruff check .`
+  - `uv build`
+  - wheel smoke test
+- `publish-pypi` job 通过 OIDC Trusted Publishing 发布到 PyPI
+
+### 环境
+
+- GitHub environment：`pypi`
+- PyPI 发布方式：Trusted Publishing
+- 发布目标：https://pypi.org/project/baihe-autogui/
+
+### 发版前本地建议检查
+
+```bash
+uv sync --dev
+uv run pytest -q
+uv run ruff check .
+uv build
 ```
 
-## 设计决策
+必要时再跑 wheel smoke test。
 
-- **即时查找**：`locate()` 时立即查找并缓存位置
-- **子集语义**：Target 必须完全在搜索区域内才算存在
-- **无状态 Element**：每次操作复用缓存位置，不自动重新查找
-- **绝对坐标**：`region=` 仅限制搜索区域，匹配结果始终是屏幕绝对坐标，不切换局部坐标系
+## 9. 测试与 CI 注意事项
 
-## 异常类型
+### 1. Headless CI
 
-| 异常 | 触发场景 |
-|------|---------|
-| `ValidationError` | 输入验证失败（如格式错误的元组、无效的 confidence） |
-| `ElementNotFoundError` | 必需元素不存在（立即操作时） |
-| `ElementTimeoutError` | 等待元素超时（`wait_until_exists`） |
-| `ImageNotFoundError` | 图像匹配失败（`ImageTarget` 查找失败） |
+CI 在 Ubuntu 无头环境里跑。不要让测试在 import 或运行时偷偷依赖真实桌面环境。
+
+如果测试涉及：
+
+- `pyautogui`
+- `screen size`
+- 鼠标点击
+- 图像查找
+
+优先 mock `gui` 适配层，而不是触发真实 GUI 调用。
+
+### 2. `pyautogui` 导入
+
+项目里已经把 `pyautogui` 改成延迟导入，以避免无头环境 import 直接失败。不要轻易改回模块级硬导入。
+
+### 3. README_zh 编码
+
+`README_zh.md` 实际是 UTF-8 文件，但某些终端或 PowerShell 输出会显示乱码。  
+如果需要可靠读取，请显式用：
+
+```powershell
+Get-Content -Raw -Encoding utf8 README_zh.md
+```
+
+不要因为终端显示乱码就误判文件内容损坏。
+
+## 10. 如果未来继续开发，优先关注什么
+
+### API 层
+
+- 保持输入模型简单直观
+- 避免引入不必要的配置对象
+- 优先让用户一眼看懂 `locate()` / `locate_all()` 的行为
+
+### 文档层
+
+每次新增 API 语义，至少同步：
+
+- `README.md`
+- `README_zh.md`
+- `CHANGELOG.md`
+
+### 测试层
+
+新增 API 语义时，至少补这些维度：
+
+- 成功路径
+- 回退路径
+- 边界输入
+- 向后兼容
+
+## 11. 建议新会话的接手顺序
+
+如果是新设备或新会话，请按下面顺序建立上下文：
+
+1. 读本文件 `CLAUDE.md`
+2. 看 `git status --short --branch`
+3. 看 `README.md`
+4. 看 `README_zh.md`
+5. 看 `pyproject.toml`
+6. 如果涉及发布，再看 `RELEASING.md` 和 `.github/workflows/release.yml`
+
+如果工作区有未提交改动，优先确认这些改动是否就是当前任务的一部分，不要贸然覆盖。

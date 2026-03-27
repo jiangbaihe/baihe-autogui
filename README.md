@@ -40,8 +40,19 @@ auto.locate('button.png').assert_exists().click()
 # Nested search inside a matched region
 auto.locate('dialog.png').locate('confirm.png').click()
 
+# Try multiple locator types in order
+auto.locate([
+    'primary_button.png',
+    'fallback_button.png',
+    (100, 200),
+]).click()
+
 # Get all matches
 for e in auto.locate_all('button.png'):
+    e.click()
+
+# Gather results from multiple locators
+for e in auto.locate_all(['button.png', 'secondary_button.png', (100, 200)]):
     e.click()
 ```
 
@@ -67,7 +78,7 @@ Chainable action wrapper created by `Auto.locate()`:
 
 ### Auto
 
-Main entry point. `locate()` returns one `Element`; `locate_all()` returns a list and yields `[]` when an image is not found.
+Main entry point. `locate()` returns one `Element`; `locate_all()` returns a list and yields `[]` when an image is not found. Both methods accept either one locator or an ordered list of mixed locators.
 
 ## API Reference
 
@@ -77,13 +88,15 @@ Main entry point. `locate()` returns one `Element`; `locate_all()` returns a lis
 auto.locate(target, *, region=None, confidence=0.8, timeout=0, retry=0)
 ```
 
-- `target`: Point `(x, y)`, Region `(x, y, w, h)`, or image path
+- `target`: Point `(x, y)`, Region `(x, y, w, h)`, image path, or a list mixing those locator types
 - `region`: Search region `(x, y, w, h)`, defaults to full screen
 - `confidence`: Image match confidence (0.0-1.0)
 - `timeout`: Seconds between retry attempts
 - `retry`: Number of retries (0 = no retry)
 - Point and region tuples must contain integers
 - Region width and height must be greater than 0
+- Non-empty locator lists are tried in order for `locate()`
+- `locate_all()` flattens the results from each locator in input order
 
 ### Element Actions
 

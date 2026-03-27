@@ -1,5 +1,6 @@
 from baihe_autogui.core.types import (
     ImageInput,
+    LocateInput,
     OptionalRegion,
     PointInput,
     RegionInput,
@@ -33,3 +34,9 @@ def test_types_optional_region():
     none_region: OptionalRegion = None
     assert region is not None
     assert none_region is None
+
+
+def test_types_locate_input_list():
+    """LocateInput also accepts a list of mixed single locators"""
+    targets: LocateInput = [(100, 200), (0, 0, 300, 200), "path/to/image.png"]
+    assert len(targets) == 3

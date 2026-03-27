@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-03-27
+
+### Added
+- `locate()` and `locate_all()` now accept ordered lists of mixed locators while preserving existing single-locator inputs
+
 ## [0.1.2] - 2026-03-27
 
 ### Fixed

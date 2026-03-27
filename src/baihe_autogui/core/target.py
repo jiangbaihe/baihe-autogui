@@ -187,3 +187,33 @@ class ImageTarget(Target):
 
     def resolve_region(self) -> Optional[Tuple[int, int, int, int]]:
         return self._locate_region_with_retry()
+
+
+class MultiTarget(Target):
+    """Ordered fallback target that tries multiple target types in sequence."""
+
+    def __init__(self, targets: List[Target]):
+        self.targets = targets
+
+    def exists(self) -> bool:
+        return any(target.exists() for target in self.targets)
+
+    def resolve(self) -> Point:
+        for target in self.targets:
+            if not target.exists():
+                continue
+            try:
+                return target.resolve()
+            except (ImageNotFoundError, ValueError):
+                continue
+        raise ImageNotFoundError("No targets matched")
+
+    def resolve_region(self) -> Optional[Tuple[int, int, int, int]]:
+        for target in self.targets:
+            if not target.exists():
+                continue
+            try:
+                return target.resolve_region()
+            except (ImageNotFoundError, ValueError):
+                continue
+        return None

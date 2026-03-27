@@ -5,7 +5,13 @@ import pytest
 from baihe_autogui.core.auto import Auto
 from baihe_autogui.core.exceptions import ValidationError
 from baihe_autogui.core.gui import gui
-from baihe_autogui.core.target import ImageTarget, Point, PointTarget, RegionTarget
+from baihe_autogui.core.target import (
+    ImageTarget,
+    MultiTarget,
+    Point,
+    PointTarget,
+    RegionTarget,
+)
 
 
 class TestAuto:
@@ -52,6 +58,50 @@ class TestAuto:
         assert element._target.retry == 3
         assert element._target.timeout == 0.5
 
+    def test_locate_target_list_wraps_fallback_target(self):
+        auto = Auto()
+        element = auto.locate([(100, 200), "btn.png"])
+        assert isinstance(element._target, MultiTarget)
+        assert len(element._target.targets) == 2
+
+    @patch("baihe_autogui.core.element.gui.click")
+    @patch("baihe_autogui.core.target.gui.locate_on_screen")
+    @patch("baihe_autogui.core.target.gui.size")
+    def test_locate_target_list_prefers_first_existing_target(
+        self, mock_size, mock_locate, mock_click
+    ):
+        mock_size.return_value = (1920, 1080)
+        auto = Auto()
+        auto.locate([(100, 200), "btn.png"]).click()
+        mock_click.assert_called_once_with(100, 200)
+        mock_locate.assert_not_called()
+
+    @patch("baihe_autogui.core.element.gui.click")
+    @patch("baihe_autogui.core.target.gui.locate_on_screen")
+    @patch("baihe_autogui.core.target.gui.size")
+    def test_locate_target_list_falls_back_to_later_match(
+        self, mock_size, mock_locate, mock_click
+    ):
+        mock_size.return_value = (1920, 1080)
+        mock_locate.return_value = MagicMock(left=80, top=180, width=40, height=40)
+        auto = Auto()
+        auto.locate([(3000, 3000), "btn.png"]).click()
+        mock_click.assert_called_once_with(100, 200)
+
+    @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
+    def test_locate_all_target_list_flattens_results(self, mock_all):
+        mock_all.return_value = [
+            MagicMock(left=80, top=180, width=40, height=40),
+            MagicMock(left=260, top=360, width=80, height=80),
+        ]
+        auto = Auto()
+        elements = auto.locate_all([(100, 200), "btn.png", (100, 200, 300, 400)])
+        assert len(elements) == 4
+        assert isinstance(elements[0]._target, PointTarget)
+        assert elements[1]._cached_point == Point(100, 200)
+        assert elements[2]._cached_point == Point(300, 400)
+        assert isinstance(elements[3]._target, RegionTarget)
+
     def test_locate_all_point(self):
         auto = Auto()
         elements = auto.locate_all((100, 200))
@@ -93,6 +143,13 @@ class TestAuto:
         auto = Auto()
         with pytest.raises(ValidationError):
             auto.locate(12345)  # Not a valid input type
+
+    @pytest.mark.parametrize("method_name", ["locate", "locate_all"])
+    def test_locate_empty_target_list_raises(self, method_name):
+        auto = Auto()
+        method = getattr(auto, method_name)
+        with pytest.raises(ValidationError, match="target list"):
+            method([])
 
     def test_locate_invalid_point_target_raises(self):
         auto = Auto()

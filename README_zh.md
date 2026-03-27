@@ -1,6 +1,6 @@
 # baihe-autogui
 
-基于 `pyautogui` 的轻量 GUI 自动化封装，保留 `Auto -> Element -> Target` 这条清晰调用链，不过度抽象。
+基于 `pyautogui` 的轻量 GUI 自动化封装，提供清晰的 `Auto -> Element -> Target` 调用链。
 
 ## 安装
 
@@ -40,8 +40,19 @@ auto.locate("button.png").assert_exists().click()
 # 在外层匹配区域内继续查找
 auto.locate("dialog.png").locate("confirm.png").click()
 
-# 获取所有匹配项
+# 按顺序尝试多个定位器
+auto.locate([
+    "primary_button.png",
+    "fallback_button.png",
+    (100, 200),
+]).click()
+
+# 获取单个定位器的所有匹配
 for element in auto.locate_all("button.png"):
+    element.click()
+
+# 汇总多个定位器的全部结果
+for element in auto.locate_all(["button.png", "secondary_button.png", (100, 200)]):
     element.click()
 ```
 
@@ -55,7 +66,7 @@ for element in auto.locate_all("button.png"):
 - `RegionTarget`：区域定位，返回区域中心点
 - `ImageTarget`：图像匹配定位
 
-所有 Target 都支持 `search_region`，并且只有当目标完整落在该区域内时，才会被视为存在。
+所有 `Target` 都支持 `search_region`。只有当目标完整落在该区域内时，才会被视为存在。
 
 ### Element
 
@@ -69,7 +80,7 @@ for element in auto.locate_all("button.png"):
 
 ### Auto
 
-主入口。`locate()` 返回单个 `Element`；`locate_all()` 返回列表，当图像未匹配到时返回 `[]`。
+主入口。`locate()` 返回单个 `Element`；`locate_all()` 返回列表，当图像未匹配到时返回 `[]`。这两个方法既支持单个定位器，也支持按顺序排列的混合定位器列表。
 
 ## API 说明
 
@@ -79,13 +90,15 @@ for element in auto.locate_all("button.png"):
 auto.locate(target, *, region=None, confidence=0.8, timeout=0, retry=0)
 ```
 
-- `target`：点 `(x, y)`、区域 `(x, y, w, h)` 或图像路径
+- `target`：点 `(x, y)`、区域 `(x, y, w, h)`、图像路径，或由这些定位器混合组成的列表
 - `region`：搜索区域 `(x, y, w, h)`，默认全屏
 - `confidence`：图像匹配置信度，范围 `0.0-1.0`
 - `timeout`：每次重试之间的等待秒数
 - `retry`：重试次数，`0` 表示不重试
 - 点和区域元组必须全部是整数
 - 区域宽高必须大于 `0`
+- `locate([...])` 会按输入顺序尝试各个定位器，返回第一个命中的结果
+- `locate_all([...])` 会按输入顺序展开每个定位器的全部结果
 
 ### Element 动作
 
@@ -105,7 +118,7 @@ element.wait_until_exists(timeout=10)  # 等待目标出现
 element.assert_exists()      # 断言目标必须存在
 ```
 
-嵌套 locate 会把当前图像匹配框或区域元组作为下一次搜索的 `region=...`。
+嵌套 `locate()` 会把当前图像匹配框或区域元组作为下一次搜索的 `region=...`。  
 点目标本身不定义面积，因此不能作为外层搜索范围。
 
 ### 坐标语义
@@ -132,7 +145,9 @@ uv run ruff check .
 uv build
 ```
 
-GitHub Actions 会在 `push` 和 `pull_request` 时使用 Python 3.8 运行同样的检查。发布前还会在一个干净虚拟环境里安装构建出的 wheel，并做一次最小导入校验。协作说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+GitHub Actions 会在 `push` 和 `pull_request` 时使用 Python 3.8 运行同样的检查。  
+发布前还会在一个干净虚拟环境里安装构建出的 wheel，并做一次最小导入校验。  
+协作说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。  
 发布说明见 [RELEASING.md](RELEASING.md)。
 
 ## 设计原则

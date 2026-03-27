@@ -3,8 +3,15 @@ from typing import List
 
 from .element import Element
 from .exceptions import ValidationError
-from .target import ImageTarget, PointTarget, RegionTarget, Target, _point_from_region
-from .types import LocateInput, OptionalRegion
+from .target import (
+    ImageTarget,
+    MultiTarget,
+    PointTarget,
+    RegionTarget,
+    Target,
+    _point_from_region,
+)
+from .types import LocateInput, OptionalRegion, SingleLocateInput
 
 
 def _is_coordinate(value: object) -> bool:
@@ -30,8 +37,10 @@ class Auto:
         timeout: float = 0,
         retry: int = 0,
     ) -> Element:
+        targets = self._create_targets(target, region, confidence, timeout, retry)
+        resolved_target = targets[0] if len(targets) == 1 else MultiTarget(targets)
         return Element(
-            self._create_target(target, region, confidence, timeout, retry),
+            resolved_target,
             auto=self,
         )
 
@@ -44,29 +53,33 @@ class Auto:
         timeout: float = 0,
         retry: int = 0,
     ) -> List[Element]:
-        t = self._create_target(target, region, confidence, timeout, retry)
-
-        if isinstance(t, ImageTarget):
-            return [
-                Element(
-                    t,
-                    auto=self,
-                    cached_point=_point_from_region(match_region),
-                    cached_region=match_region,
+        elements: List[Element] = []
+        for t in self._create_targets(target, region, confidence, timeout, retry):
+            if isinstance(t, ImageTarget):
+                elements.extend(
+                    [
+                        Element(
+                            t,
+                            auto=self,
+                            cached_point=_point_from_region(match_region),
+                            cached_region=match_region,
+                        )
+                        for match_region in t._locate_all_regions_with_retry()
+                    ]
                 )
-                for match_region in t._locate_all_regions_with_retry()
-            ]
+            else:
+                elements.append(Element(t, auto=self))
 
-        return [Element(t, auto=self)]
+        return elements
 
-    def _create_target(
+    def _create_targets(
         self,
         target: LocateInput,
         region: OptionalRegion,
         confidence: float,
         timeout: float,
         retry: int,
-    ) -> Target:
+    ) -> List[Target]:
         _validate_region(region, name="region")
 
         if not 0 <= confidence <= 1:
@@ -76,6 +89,24 @@ class Auto:
         if retry < 0:
             raise ValidationError("retry must be greater than or equal to 0")
 
+        if isinstance(target, list):
+            if not target:
+                raise ValidationError("target list must contain at least one locator")
+            return [
+                self._create_single_target(candidate, region, confidence, timeout, retry)
+                for candidate in target
+            ]
+
+        return [self._create_single_target(target, region, confidence, timeout, retry)]
+
+    def _create_single_target(
+        self,
+        target: SingleLocateInput,
+        region: OptionalRegion,
+        confidence: float,
+        timeout: float,
+        retry: int,
+    ) -> Target:
         if isinstance(target, tuple) and len(target) == 2:
             if not all(_is_coordinate(value) for value in target):
                 raise ValidationError("point target must be a tuple of 2 integers")
