@@ -239,6 +239,37 @@ uv build
 
 必要时再跑 wheel smoke test。
 
+### 正确的发版顺序
+
+修改项目内文本文档、追加版本号、提交、推送、发版时，务必按下面顺序执行，不要并行混做：
+
+1. 修改代码、测试、文档。
+2. 更新 `pyproject.toml` 里的版本号。
+3. 更新 `CHANGELOG.md`。
+4. 如有必要，同步更新 `README.md`、`README_zh.md`、`CLAUDE.md`、`RELEASING.md`。
+5. 运行：
+
+```bash
+git status --short --branch
+uv sync --dev
+uv run pytest -q
+uv run ruff check .
+uv build
+```
+
+6. 检查是否有新文件需要纳入仓库，尤其是新增测试、fixture、脚本或文档资源。
+7. `git add ...`
+8. `git commit -m "..."`  
+9. 先 `git push origin main`
+10. 确认 `HEAD` 正确后，再创建 tag，例如 `git tag vX.Y.Z`
+11. 最后再推 tag：`git push origin refs/tags/vX.Y.Z:refs/tags/vX.Y.Z`
+
+关键约束：
+
+- 不要把“提交”和“打 tag”并行执行。
+- 不要在 tag 尚未确认指向当前 `HEAD` 时就推 tag。
+- 如果发版失败，先核对远端 tag 指向的提交是否正确，再检查 workflow / PyPI。
+
 ## 9. 测试与 CI 注意事项
 
 ### 1. Headless CI
