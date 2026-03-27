@@ -6,6 +6,19 @@ from .target import ImageTarget, PointTarget, RegionTarget, Target
 from .types import LocateInput, OptionalRegion
 
 
+def _is_coordinate(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _validate_region(region: OptionalRegion, *, name: str) -> None:
+    if region is None:
+        return
+    if len(region) != 4 or not all(_is_coordinate(value) for value in region):
+        raise ValueError(f"{name} must be a tuple of 4 integers")
+    if region[2] <= 0 or region[3] <= 0:
+        raise ValueError(f"{name} width and height must be greater than 0")
+
+
 class Auto:
     def locate(
         self,
@@ -34,7 +47,7 @@ class Auto:
         if isinstance(t, ImageTarget):
             return [Element(t, cached_point=point) for point in t._locate_all_with_retry()]
 
-        # PointTarget 和 RegionTarget 只有 1 个
+        # PointTarget and RegionTarget only produce one result.
         return [Element(t)]
 
     def _create_target(
@@ -45,9 +58,24 @@ class Auto:
         timeout: float,
         retry: int,
     ) -> Target:
+        _validate_region(region, name="region")
+
+        if not 0 <= confidence <= 1:
+            raise ValueError("confidence must be between 0 and 1")
+        if timeout < 0:
+            raise ValueError("timeout must be greater than or equal to 0")
+        if retry < 0:
+            raise ValueError("retry must be greater than or equal to 0")
+
         if isinstance(target, tuple) and len(target) == 2:
+            if not all(_is_coordinate(value) for value in target):
+                raise ValueError("point target must be a tuple of 2 integers")
             return PointTarget(target[0], target[1], search_region=region)
         if isinstance(target, tuple) and len(target) == 4:
+            if not all(_is_coordinate(value) for value in target):
+                raise ValueError("region target must be a tuple of 4 integers")
+            if target[2] <= 0 or target[3] <= 0:
+                raise ValueError("region target width and height must be greater than 0")
             return RegionTarget(
                 target[0], target[1], target[2], target[3], search_region=region
             )

@@ -1,6 +1,6 @@
 # baihe-autogui
 
-基于 pyautogui 的现代 GUI 自动化框架，采用 **Target + Element + Auto** 多态链式架构。
+基于 `pyautogui` 的轻量封装，保留 `Auto -> Element -> Target` 这一条清晰调用链，不过度抽象。
 
 ## 安装
 
@@ -43,7 +43,7 @@ for e in auto.locate_all('button.png'):
 - `RegionTarget` - 区域定位（返回中心点）
 - `ImageTarget` - 图像匹配定位
 
-所有 Target 支持 `search_region` 参数，子集语义判断存在性。
+所有 Target 都支持 `search_region`，并且只有目标完整落在搜索区域内时才算存在。
 
 ### Element（元素）
 
@@ -53,7 +53,7 @@ for e in auto.locate_all('button.png'):
 
 ### Auto（入口）
 
-主入口，`locate()` 和 `locate_all()` 返回 Element。
+主入口。`locate()` 返回单个 `Element`，`locate_all()` 返回列表；图像未命中时返回空列表。
 
 ## API 参考
 
@@ -68,6 +68,8 @@ auto.locate(target, *, region=None, confidence=0.8, timeout=0, retry=0)
 - `confidence`: 图像匹配置信度 (0.0-1.0)
 - `timeout`: 每次重试间隔时间（秒）
 - `retry`: 重试次数（0 = 不重试）
+- 点和区域元组必须全部为整数
+- 区域宽高必须大于 0
 
 ### Element 动作
 
@@ -82,6 +84,6 @@ element.assert_exists()  # 断言元素必须存在
 
 ## 架构设计
 
-- **即时查找**：`locate()` 时立即查找并缓存位置
-- **子集语义**：目标必须完全在搜索区域内才算存在
-- **无状态 Element**：每次操作复用缓存位置，不自动重新查找
+- `locate()` 按需解析，只有执行动作时才真正取位置
+- `locate_all()` 会快照图像匹配结果，并复用缓存点位
+- 目标必须完整落在搜索区域内才算存在

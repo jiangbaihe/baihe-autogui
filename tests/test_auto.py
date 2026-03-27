@@ -89,3 +89,36 @@ class TestAuto:
         auto = Auto()
         with pytest.raises(ValueError):
             auto.locate(12345)  # Not a valid input type
+
+    def test_locate_invalid_point_target_raises(self):
+        auto = Auto()
+        with pytest.raises(ValueError, match="point target"):
+            auto.locate((100, "200"))
+
+    def test_locate_invalid_region_target_raises(self):
+        auto = Auto()
+        with pytest.raises(ValueError, match="region target"):
+            auto.locate((100, 200, 0, 30))
+
+    def test_locate_invalid_search_region_raises(self):
+        auto = Auto()
+        with pytest.raises(ValueError, match="region width and height"):
+            auto.locate((100, 200), region=(0, 0, 0, 600))
+
+    @pytest.mark.parametrize("confidence", [-0.1, 1.1])
+    def test_locate_invalid_confidence_raises(self, confidence):
+        auto = Auto()
+        with pytest.raises(ValueError, match="confidence"):
+            auto.locate("btn.png", confidence=confidence)
+
+    @pytest.mark.parametrize(
+        ("kwargs", "message"),
+        [
+            ({"timeout": -0.1}, "timeout"),
+            ({"retry": -1}, "retry"),
+        ],
+    )
+    def test_locate_invalid_retry_options_raise(self, kwargs, message):
+        auto = Auto()
+        with pytest.raises(ValueError, match=message):
+            auto.locate("btn.png", **kwargs)

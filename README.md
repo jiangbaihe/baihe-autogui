@@ -1,6 +1,6 @@
 # baihe-autogui
 
-A modern GUI automation framework based on pyautogui, featuring Target + Element + Auto polymorphic chain architecture.
+A small GUI automation wrapper around `pyautogui` with a simple `Auto -> Element -> Target` flow.
 
 ## Installation
 
@@ -43,7 +43,7 @@ Abstraction for locating targets on screen:
 - `RegionTarget` - Region targeting (returns center point)
 - `ImageTarget` - Image matching targeting
 
-All targets support `search_region` parameter with subset semantics.
+All targets support `search_region`, and a target only counts as existing when it is fully inside that region.
 
 ### Element
 
@@ -53,7 +53,7 @@ Chainable action wrapper created by `Auto.locate()`:
 
 ### Auto
 
-Main entry point. `locate()` and `locate_all()` return Element.
+Main entry point. `locate()` returns one `Element`; `locate_all()` returns a list and yields `[]` when an image is not found.
 
 ## API Reference
 
@@ -68,6 +68,8 @@ auto.locate(target, *, region=None, confidence=0.8, timeout=0, retry=0)
 - `confidence`: Image match confidence (0.0-1.0)
 - `timeout`: Seconds between retries
 - `retry`: Number of retries (0 = no retry)
+- Point and region tuples must contain integers
+- Region width and height must be greater than 0
 
 ### Element Actions
 

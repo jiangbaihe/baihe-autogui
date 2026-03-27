@@ -22,4 +22,4 @@ __all__ = [
 
 
 def main() -> None:
-    print("Hello from baihe-autogui!")
+    print("baihe-autogui provides a Python API. Use: from baihe_autogui import Auto")
