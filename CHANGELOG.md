@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-03-27
+
+### Fixed
+- Mocked screen-size checks in element tests so the release workflow does not hit real GUI calls in headless CI
+
 ## [0.1.1] - 2026-03-27
 
 ### Added

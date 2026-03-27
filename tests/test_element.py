@@ -30,7 +30,9 @@ class TestElement:
         assert element._required is False
         assert result is element
 
-    def test_assert_exists_raises_when_not_exists(self):
+    @patch("baihe_autogui.core.target.gui.size")
+    def test_assert_exists_raises_when_not_exists(self, mock_size):
+        mock_size.return_value = (1920, 1080)
         target = PointTarget(3000, 3000)
         element = Element(target, MockAuto())
         with pytest.raises(ElementNotFoundError):
@@ -147,7 +149,9 @@ class TestElement:
         with pytest.raises(ValidationError, match="hotkey"):
             element.hotkey()
 
-    def test_wait_until_exists_returns_self(self):
+    @patch("baihe_autogui.core.target.gui.size")
+    def test_wait_until_exists_returns_self(self, mock_size):
+        mock_size.return_value = (1920, 1080)
         element = Element(PointTarget(100, 200), MockAuto())
         assert element.wait_until_exists(timeout=0.1) is element
 
@@ -164,7 +168,9 @@ class TestElement:
         with pytest.raises(ElementTimeoutError):
             element.wait_until_exists(timeout=0.1)
 
-    def test_wait_until_exists_zero_timeout_exists(self):
+    @patch("baihe_autogui.core.target.gui.size")
+    def test_wait_until_exists_zero_timeout_exists(self, mock_size):
+        mock_size.return_value = (1920, 1080)
         element = Element(PointTarget(100, 200), MockAuto())
         assert element.wait_until_exists(timeout=0) is element
 
