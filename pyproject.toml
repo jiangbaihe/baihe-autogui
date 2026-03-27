@@ -11,6 +11,12 @@ dependencies = [
     "pyautogui>=0.9.54",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<9",
+    "ruff>=0.15,<0.16",
+]
+
 [project.scripts]
 baihe-autogui = "baihe_autogui:main"
 

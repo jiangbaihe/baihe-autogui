@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Thin `gui` adapter layer for all `pyautogui` interactions
+- New `Element` actions: `move_to()`, `right_click()`, `double_click()`, `press()`, and `hotkey()`
+- Public exception types: `AutoGuiError`, `ValidationError`, `ElementNotFoundError`, `ElementTimeoutError`, and `ImageNotFoundError`
+- Example scripts under `examples/`
+- Public API regression tests
+- GitHub Actions workflow for tests, linting, and package builds
+- Contributor guide in `CONTRIBUTING.md`
+- Declared `dev` dependency group for local testing and linting
+
+### Changed
+- `locate_all()` now snapshots image-match points and reuses cached coordinates
+- Validation now raises explicit `ValidationError` instead of generic `ValueError`
+- Required-element failures now raise explicit element exceptions instead of generic built-ins
+- Project descriptions and documentation now describe the library as a lightweight wrapper rather than a heavy architecture
+- README, contributor notes, and CI now use the same `uv sync --dev` workflow
+
+### Fixed
+- `locate_all()` image matches now use box centers instead of top-left coordinates
+- Cached points now bypass unnecessary re-lookup during actions
+- Image-not-found handling is consistent for both single and multiple image searches
+
 ## [0.1.0] - 2026-03-27
 
 ### Added
