@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-03-27
+
+### Fixed
+- Normalized `Path` image inputs to strings before passing them to the OpenCV-backed locate APIs, so `locate()` and `locate_all()` work correctly with `Path` objects
+
 ## [0.1.4] - 2026-03-27
 
 ### Changed

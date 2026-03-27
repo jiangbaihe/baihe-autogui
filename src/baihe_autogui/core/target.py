@@ -1,6 +1,7 @@
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Optional, Tuple
 
 from .exceptions import ImageNotFoundError
@@ -125,7 +126,7 @@ class ImageTarget(Target):
         timeout: float = 0,
         retry: int = 0,
     ):
-        self.image = image
+        self.image = str(image) if isinstance(image, Path) else image
         self.search_region = search_region
         self.confidence = confidence
         self.timeout = timeout

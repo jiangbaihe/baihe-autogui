@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -107,6 +108,10 @@ class TestImageTarget:
         assert target.timeout == 0.5
         assert target.retry == 3
 
+    def test_image_target_normalizes_path_to_string(self):
+        target = ImageTarget(Path("btn.png"))
+        assert target.image == "btn.png"
+
     @patch("baihe_autogui.core.target.gui.locate_on_screen")
     def test_image_target_resolve_success(self, mock_locate):
         mock_locate.return_value = MagicMock(left=80, top=180, width=40, height=40)
@@ -165,3 +170,13 @@ class TestImageTarget:
     def test_image_target_locate_all_not_found_returns_empty_list(self, mock_locate_all):
         mock_locate_all.side_effect = gui.image_not_found_exception()
         assert ImageTarget("btn.png")._locate_all_with_retry() == []
+
+    @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
+    def test_image_target_locate_all_accepts_path_input(self, mock_locate_all):
+        mock_locate_all.return_value = []
+        ImageTarget(Path("btn.png"))._locate_all_with_retry()
+        mock_locate_all.assert_called_once_with(
+            "btn.png",
+            confidence=0.8,
+            region=None,
+        )
