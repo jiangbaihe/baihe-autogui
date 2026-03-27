@@ -106,6 +106,13 @@ element.assert_exists()  # Assert element must exist
 Nested locate uses the current image match box or region tuple as the next `region=...`.
 Point targets do not define an area, so they cannot be used as an outer scope.
 
+### Coordinate Semantics
+
+- `region=(x, y, w, h)` limits the search area, but does not switch to a local coordinate system.
+- Image matches still resolve to screen-space absolute coordinates.
+- Nested `locate()` reuses the outer absolute region for the next search.
+- `click()`, `move_to()`, and other mouse actions always use absolute screen coordinates.
+
 ### Exceptions
 
 - `ValidationError` - Invalid input such as malformed tuples or bad retry settings
