@@ -5,8 +5,16 @@
 ## 安装
 
 ```bash
-uv sync
+uv add baihe-autogui
 ```
+
+或
+
+```bash
+pip install baihe-autogui
+```
+
+`opencv-python` 会作为包依赖一起安装，因此使用 `confidence=...` 的图像匹配不需要再额外手动补装 OpenCV。
 
 ## 示例
 

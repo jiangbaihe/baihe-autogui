@@ -17,7 +17,7 @@
 ### 已发布状态
 
 - PyPI 项目：`baihe-autogui`
-- 当前已发布版本：`0.1.3`
+- 当前已发布版本：`0.1.4`
 - 发布方式：GitHub Actions + PyPI Trusted Publishing
 
 ### 当前工作区状态
@@ -38,6 +38,7 @@ git status --short --branch
 
 - `locate()` / `locate_all()` 在保留“单个多类型定位器”能力的基础上，新增支持“混合定位器列表”
 - 对应的英文 / 中文 README 与测试已经同步覆盖
+- 图像定位依赖 `opencv-python` 作为运行时依赖，避免用户在使用 `confidence=...` 时额外手动安装 OpenCV
 
 不要假设当前工作区永远带着这组未提交改动；应以实时 `git status` 为准。
 

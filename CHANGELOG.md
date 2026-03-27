@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-03-27
+
+### Changed
+- Added `opencv-python` as a direct runtime dependency so image matching with `confidence=...` works out of the box in consumer environments
+
 ## [0.1.3] - 2026-03-27
 
 ### Added

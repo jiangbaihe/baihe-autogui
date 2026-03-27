@@ -24,12 +24,12 @@ uv run --python 3.8 --no-project --with ./dist/*.whl python scripts/smoke_import
 ## Publish flow
 
 1. Commit the release changes.
-2. Create a version tag like `v0.1.1`.
+2. Create a version tag like `vX.Y.Z`.
 3. Push the branch and tag:
 
 ```bash
 git push
-git push origin v0.1.1
+git push origin vX.Y.Z
 ```
 
 4. GitHub Actions will run the `Release` workflow.

@@ -5,8 +5,16 @@ A small GUI automation wrapper around `pyautogui` with a simple `Auto -> Element
 ## Installation
 
 ```bash
-uv sync
+uv add baihe-autogui
 ```
+
+or
+
+```bash
+pip install baihe-autogui
+```
+
+`opencv-python` is installed as a package dependency, so image matching with `confidence=...` works without extra manual setup.
 
 ## Examples
 
