@@ -15,10 +15,6 @@ class Point:
     y: int
 
 
-def _region_area(region: Tuple[int, int, int, int]) -> int:
-    return region[2] * region[3]
-
-
 def _intersection_area(
     left: Tuple[int, int, int, int], right: Tuple[int, int, int, int]
 ) -> int:
@@ -36,53 +32,37 @@ def _intersection_area(
     return overlap_w * overlap_h
 
 
-def _region_center(region: Tuple[int, int, int, int]) -> Tuple[float, float]:
-    x, y, width, height = region
-    return (x + width / 2, y + height / 2)
-
-
-def _is_same_match_region(
+def _regions_intersect(
     left: Tuple[int, int, int, int],
     right: Tuple[int, int, int, int],
-    *,
-    coverage_threshold: float = 0.8,
-    center_offset_ratio: float = 0.5,
 ) -> bool:
-    overlap = _intersection_area(left, right)
-    if overlap > 0:
-        smaller_area = min(_region_area(left), _region_area(right))
-        if overlap / smaller_area >= coverage_threshold:
-            return True
-
-    left_center_x, left_center_y = _region_center(left)
-    right_center_x, right_center_y = _region_center(right)
-    max_dx = min(left[2], right[2]) * center_offset_ratio
-    max_dy = min(left[3], right[3]) * center_offset_ratio
-    return (
-        abs(left_center_x - right_center_x) <= max_dx
-        and abs(left_center_y - right_center_y) <= max_dy
-    )
+    return _intersection_area(left, right) > 0
 
 
-def _dedupe_match_regions(
-    regions: List[Tuple[int, int, int, int]],
-    *,
-    coverage_threshold: float = 0.8,
-    center_offset_ratio: float = 0.5,
-) -> List[Tuple[int, int, int, int]]:
+def _dedupe_match_regions(regions: List[Tuple[int, int, int, int]]) -> List[Tuple[int, int, int, int]]:
     deduped: List[Tuple[int, int, int, int]] = []
+    clusters: List[List[Tuple[int, int, int, int]]] = []
+
     for region in regions:
-        if any(
-            _is_same_match_region(
-                region,
-                kept,
-                coverage_threshold=coverage_threshold,
-                center_offset_ratio=center_offset_ratio,
-            )
-            for kept in deduped
-        ):
+        matching_cluster_indexes = [
+            index
+            for index, cluster in enumerate(clusters)
+            if any(_regions_intersect(region, member) for member in cluster)
+        ]
+
+        if not matching_cluster_indexes:
+            clusters.append([region])
+            deduped.append(region)
             continue
-        deduped.append(region)
+
+        primary_index = matching_cluster_indexes[0]
+        clusters[primary_index].append(region)
+
+        for merge_index in reversed(matching_cluster_indexes[1:]):
+            clusters[primary_index].extend(clusters[merge_index])
+            del clusters[merge_index]
+            del deduped[merge_index]
+
     return deduped
 
 

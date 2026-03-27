@@ -40,3 +40,9 @@ htmlcov/
 .claude/
 .DS_Store
 Thumbs.db
+
+# Local-only private regression assets
+tests/fixtures/btn_close_tab.png
+tests/fixtures/btn_close_tab_focus.png
+tests/fixtures/ScreenShot.png
+tests/test_matching_regression.py
