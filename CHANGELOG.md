@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Documented the long-term extension release policy so `baihe-autogui` tracks a compatible inspect release line instead of republishing for every inspect-only patch.
+
 ## [0.1.16] - 2026-03-29
 
 ### Fixed

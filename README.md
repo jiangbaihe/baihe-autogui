@@ -28,6 +28,7 @@ pip install "baihe-autogui[inspect]"
 
 `baihe-autogui[extra]` is kept as a compatibility alias for the same extension set.
 The inspect extension pins `PySide6==6.1.3` on Python 3.8 for Win7-oriented compatibility, while Python 3.9 and newer resolve a newer compatible PySide6 automatically.
+The optional `inspect` / `extra` dependency tracks a compatible inspect release line rather than being republished for every inspect patch.
 
 `opencv-python` is installed as a package dependency, so image matching with `confidence=...` works without extra manual setup.
 Windows only.

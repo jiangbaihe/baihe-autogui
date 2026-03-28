@@ -60,9 +60,17 @@ Project priorities:
 - Keep `extra` as a compatibility alias for the same extension set
 - The inspect extension is responsible for `PySide6` policy; the main package should not grow a direct Qt dependency
 - The main package should remain releasable without a checked-out inspect workspace
+- The `inspect` / `extra` dependency range should target a compatible inspect release line, not be bumped for every inspect patch by default
 - Current compatibility policy is:
   - Python `3.8` installs inspect with `PySide6==6.1.3` for Win7-oriented compatibility
   - Python `3.9+` installs inspect with a newer compatible `PySide6`
+
+## Release Order Policy
+
+- `baihe-autogui` can be released on its own at any time
+- Compatible inspect-only patch releases should not force a follow-up main-package release
+- If inspect requires a new main-package capability, release `baihe-autogui` first and then release `baihe-autogui-inspect`
+- Only bump the main package's `inspect` / `extra` dependency floor when the previous compatible inspect line is no longer acceptable for users
 
 ## Repository Landmarks
 

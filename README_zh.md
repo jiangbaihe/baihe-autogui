@@ -29,6 +29,7 @@ pip install "baihe-autogui[inspect]"
 `baihe-autogui[extra]` 也会作为同一组扩展依赖的兼容别名保留。
 
 inspect 扩展会在 Python 3.8 上固定使用 `PySide6==6.1.3` 以兼容 Win7，而在 Python 3.9 及以上环境中会自动解析到更新的兼容 `PySide6` 版本。
+`inspect` / `extra` 扩展依赖会跟随一个兼容的 inspect 版本线，而不会为了每一个 inspect patch 都重发主包。
 
 `opencv-python` 会作为包依赖一起安装，因此使用 `confidence=...` 的图像匹配不需要再额外手动补装 OpenCV。
 仅支持 Windows。
