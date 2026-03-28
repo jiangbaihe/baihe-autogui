@@ -59,6 +59,7 @@ Project priorities:
 - `baihe-autogui-inspect` is a separate companion package exposed here through the optional `inspect` extra
 - Keep `extra` as a compatibility alias for the same extension set
 - The inspect extension is responsible for `PySide6` policy; the main package should not grow a direct Qt dependency
+- The main package should remain releasable without a checked-out inspect workspace
 - Current compatibility policy is:
   - Python `3.8` installs inspect with `PySide6==6.1.3` for Win7-oriented compatibility
   - Python `3.9+` installs inspect with a newer compatible `PySide6`
@@ -79,7 +80,6 @@ Project priorities:
 - When API semantics change, add tests for success paths, failure paths, and edge inputs
 - Prefer mocking the `gui` adapter instead of relying on a real desktop environment in tests
 - Do not commit real business screenshots, real button assets, or real business automation scripts into the public repo
-- In local workspace development, resolve `baihe-autogui-inspect` from `../baihe-autogui-inspect`
 
 ## Common Commands
 

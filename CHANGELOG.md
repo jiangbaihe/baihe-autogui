@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.15] - 2026-03-29
+
+### Fixed
+- Decoupled the main package release workflow from a checked-out inspect workspace so tag-driven releases can build against publishable package metadata instead of local editable sibling state.
+- Temporarily narrowed the optional `inspect` / `extra` dependency to the currently published companion line on Python 3.8, which keeps the release chain unblocked while the refreshed inspect package is published separately.
+
 ## [0.1.14] - 2026-03-29
 
 ### Fixed
