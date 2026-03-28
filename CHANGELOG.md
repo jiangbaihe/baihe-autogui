@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-03-29
+
+### Fixed
+- Raised the optional `inspect` / `extra` extension dependency floor to `baihe-autogui-inspect>=0.1.3`, which now keeps Python 3.8 on `PySide6==6.1.3` for Win7-oriented compatibility while allowing newer Python versions to resolve newer compatible PySide6 releases.
+
+### Changed
+- Refreshed project metadata and contributor guidance so Windows-only scope, Python 3.8 development baseline, and the inspect extension relationship are documented consistently.
+
 ## [0.1.12] - 2026-03-29
 
 ### Fixed

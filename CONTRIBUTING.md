@@ -16,6 +16,7 @@ Project priorities:
 
 - Runtime support is `Python >=3.8`
 - Local development, CI, and release validation stay on Python `3.8`
+- Python `3.8` remains the development baseline because it is the last Python version that still runs on Windows 7
 - Coordinates are always absolute screen coordinates
 - `region=(x, y, w, h)` only limits the search area; it does not switch to local coordinates
 - Target existence means the target is fully inside the search region, not merely intersecting it
@@ -52,6 +53,16 @@ Project priorities:
 - Region / image targets render as red frames; point targets render as red crosshairs
 - This is a current platform-specific capability and should not be treated as a cross-platform guarantee
 
+## Packaging And Extension Semantics
+
+- `baihe-autogui` is the primary package users install
+- `baihe-autogui-inspect` is a separate companion package exposed here through the optional `inspect` extra
+- Keep `extra` as a compatibility alias for the same extension set
+- The inspect extension is responsible for `PySide6` policy; the main package should not grow a direct Qt dependency
+- Current compatibility policy is:
+  - Python `3.8` installs inspect with `PySide6==6.1.3` for Win7-oriented compatibility
+  - Python `3.9+` installs inspect with a newer compatible `PySide6`
+
 ## Repository Landmarks
 
 - `src/baihe_autogui/core/auto.py`: user entry point and target creation
@@ -68,8 +79,6 @@ Project priorities:
 - When API semantics change, add tests for success paths, failure paths, and edge inputs
 - Prefer mocking the `gui` adapter instead of relying on a real desktop environment in tests
 - Do not commit real business screenshots, real button assets, or real business automation scripts into the public repo
-- `baihe-autogui-inspect` is the companion extension package and is exposed here through optional dependencies
-- Keep the `inspect` extra working, and keep `extra` as a compatibility alias for the same extension set
 - In local workspace development, resolve `baihe-autogui-inspect` from `../baihe-autogui-inspect`
 
 ## Common Commands
