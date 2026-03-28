@@ -3,6 +3,7 @@ from typing import List, Tuple
 
 from .element import Element
 from .exceptions import ValidationError
+from .gui import gui
 from .overlay import overlay
 from .target import (
     ImageTarget,
@@ -32,6 +33,16 @@ def _validate_region(region: OptionalRegion, *, name: str) -> None:
 class Auto:
     def clear_highlights(self) -> None:
         overlay.clear()
+
+    def move_to(self, x: int, y: int) -> None:
+        if not _is_coordinate(x) or not _is_coordinate(y):
+            raise ValidationError("move_to coordinates must be integers")
+        gui.move_to(x, y)
+
+    def move_by(self, dx: int, dy: int) -> None:
+        if not _is_coordinate(dx) or not _is_coordinate(dy):
+            raise ValidationError("move_by offsets must be integers")
+        gui.move_by(dx, dy)
 
     def locate(
         self,

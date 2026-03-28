@@ -10,6 +10,7 @@ from baihe_autogui.core.target import (
     Point,
     PointTarget,
     RegionTarget,
+    point_from_region_anchor,
 )
 
 
@@ -85,6 +86,27 @@ class TestRegionTarget:
 
     def test_region_target_resolve_region(self):
         assert RegionTarget(100, 200, 300, 400).resolve_region() == (100, 200, 300, 400)
+
+    @pytest.mark.parametrize(
+        ("anchor", "expected"),
+        [
+            ("top_left", Point(100, 200)),
+            ("top", Point(250, 200)),
+            ("top_right", Point(399, 200)),
+            ("left", Point(100, 400)),
+            ("center", Point(250, 400)),
+            ("right", Point(399, 400)),
+            ("bottom_left", Point(100, 599)),
+            ("bottom", Point(250, 599)),
+            ("bottom_right", Point(399, 599)),
+        ],
+    )
+    def test_point_from_region_anchor(self, anchor, expected):
+        assert point_from_region_anchor((100, 200, 300, 400), anchor) == expected
+
+    def test_point_from_region_anchor_invalid_raises(self):
+        with pytest.raises(ValueError, match="Unsupported anchor"):
+            point_from_region_anchor((100, 200, 300, 400), "invalid")
 
 
 class TestImageTarget:

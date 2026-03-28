@@ -25,6 +25,9 @@ class PyAutoGuiAdapter:
     def move_to(self, x: int, y: int) -> None:
         self._pyautogui().moveTo(x, y)
 
+    def move_by(self, dx: int, dy: int) -> None:
+        self._pyautogui().moveRel(dx, dy)
+
     def click(self, x: int, y: int) -> None:
         self._pyautogui().click(x, y)
 

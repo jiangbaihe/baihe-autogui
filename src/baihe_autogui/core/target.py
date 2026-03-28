@@ -88,6 +88,41 @@ def point_from_region(region: Tuple[int, int, int, int]) -> Point:
     return Point(x + width // 2, y + height // 2)
 
 
+_ANCHOR_ALIASES = {
+    "top_left": ("left", "top"),
+    "top": ("center", "top"),
+    "top_right": ("right", "top"),
+    "left": ("left", "center"),
+    "center": ("center", "center"),
+    "right": ("right", "center"),
+    "bottom_left": ("left", "bottom"),
+    "bottom": ("center", "bottom"),
+    "bottom_right": ("right", "bottom"),
+}
+
+
+def _point_on_axis(start: int, size: int, alignment: str) -> int:
+    if alignment == "left" or alignment == "top":
+        return start
+    if alignment == "center":
+        return start + size // 2
+    if alignment == "right" or alignment == "bottom":
+        return start + size - 1
+    raise ValueError(f"Unsupported anchor alignment: {alignment}")
+
+
+def point_from_region_anchor(region: Tuple[int, int, int, int], anchor: str) -> Point:
+    x, y, width, height = region
+    try:
+        horizontal, vertical = _ANCHOR_ALIASES[anchor]
+    except KeyError as exc:
+        raise ValueError(f"Unsupported anchor: {anchor}") from exc
+    return Point(
+        _point_on_axis(x, width, horizontal),
+        _point_on_axis(y, height, vertical),
+    )
+
+
 class Target(ABC):
     """Base interface for anything that can resolve to a screen point."""
 

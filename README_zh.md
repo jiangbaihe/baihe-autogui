@@ -15,6 +15,7 @@ pip install baihe-autogui
 ```
 
 `opencv-python` 会作为包依赖一起安装，因此使用 `confidence=...` 的图像匹配不需要再额外手动补装 OpenCV。
+支持 `Python >=3.8`。
 
 ## 示例
 
@@ -28,14 +29,20 @@ from baihe_autogui import Auto
 
 auto = Auto()
 
+# 全局鼠标移动
+auto.move_to(100, 200)
+auto.move_by(20, -10)
+
 # 点坐标定位
 auto.locate((100, 200)).click()
 
 # 区域定位，点击区域中心点
 auto.locate((100, 200, 80, 30)).click()
+auto.locate((100, 200, 80, 30)).hover(anchor="top_right")
+auto.locate((100, 200, 80, 30)).click(anchor="bottom", dy=-2)
 
 # 图像定位
-auto.locate("button.png").move_to().click().wait(0.5).write("hello")
+auto.locate("button.png").hover().click().wait(0.5).write("hello")
 auto.locate("button.png").right_click()
 auto.locate("button.png").double_click().press("enter")
 auto.locate("button.png").hotkey("ctrl", "a").write("replacement")
@@ -45,6 +52,8 @@ auto.locate("button.png").highlight(timeout=1.5).click()
 auto.locate("button.png").if_exists().click()
 auto.locate("button.png").wait_until_exists(timeout=5).click()
 auto.locate("button.png").assert_exists().click()
+if auto.locate("button.png").exists():
+    auto.locate("button.png").click()
 
 # 在外层匹配区域内继续查找
 auto.locate("dialog.png").locate("confirm.png").click()
@@ -87,16 +96,17 @@ auto.clear_highlights()
 
 由 `Auto.locate()` 返回的链式动作包装：
 
-- `move_to()` / `click()` / `right_click()` / `double_click()`：鼠标动作
+- `hover()` / `click()` / `right_click()` / `double_click()`：支持 `anchor`、`dx`、`dy` 的元素鼠标动作
 - `wait()` / `write()`：通用动作
 - `press()` / `hotkey()`：键盘动作
 - `highlight()` / `clear_highlight()`：调试高亮动作
 - `locate()` / `locate_all()`：在当前图像或区域范围内继续查找
+- `exists()`：布尔存在性检查
 - `if_exists()` / `wait_until_exists()` / `assert_exists()`：条件控制
 
 ### Auto
 
-主入口。`locate()` 返回单个 `Element`；`locate_all()` 返回列表，当图像未匹配到时返回 `[]`。这两个方法既支持单个定位器，也支持按顺序排列的混合定位器列表。`clear_highlights()` 可清除当前所有调试高亮。
+主入口。`move_to(x, y)` 用于移动到屏幕绝对坐标，`move_by(dx, dy)` 用于相对当前鼠标位置移动；`locate()` 返回单个 `Element`，`locate_all()` 返回列表，当图像未匹配到时返回 `[]`。`clear_highlights()` 可清除当前所有调试高亮。
 
 ## API 说明
 
@@ -120,10 +130,12 @@ auto.locate(target, *, region=None, confidence=0.8, timeout=0, retry=0)
 ### Element 动作
 
 ```python
-element.move_to()            # 将鼠标移动到目标位置
-element.click()              # 在目标位置点击
-element.right_click()        # 在目标位置右键点击
-element.double_click()       # 在目标位置双击
+auto.move_to(100, 200)       # 移动到屏幕绝对坐标
+auto.move_by(20, -10)        # 基于当前鼠标位置相对移动
+element.hover(anchor="center", dx=0, dy=0)  # 移动到目标锚点
+element.click(anchor="center", dx=0, dy=0)    # 在目标锚点点击
+element.right_click(anchor="center", dx=0, dy=0)  # 在目标锚点右键点击
+element.double_click(anchor="center", dx=0, dy=0)  # 在目标锚点双击
 element.wait(seconds)        # 等待
 element.write(text)          # 输入文本
 element.press("enter")       # 按下单个按键
@@ -132,6 +144,7 @@ element.highlight(timeout=1.5, color="red", thickness=2)  # 绘制临时高亮
 element.clear_highlight()    # 清除当前元素的高亮
 element.locate("inner.png")  # 在当前图像或区域内继续查找
 element.locate_all("item.png")  # 在当前图像或区域内查找全部匹配项
+element.exists()             # 返回 True/False，但不改变链式状态
 element.if_exists()          # 目标不存在时跳过后续动作
 element.wait_until_exists(timeout=10)  # 等待目标出现
 element.assert_exists()      # 断言目标必须存在
@@ -139,10 +152,15 @@ auto.clear_highlights()      # 清除全部高亮
 ```
 
 嵌套 `locate()` 会把当前图像匹配框或区域元组作为下一次搜索的 `region=...`。  
-点目标本身不定义面积，因此不能作为外层搜索范围。
-如果当前 `Element` 已经缓存了点位或区域，`highlight()` 会优先复用缓存，避免高亮位置与后续动作漂移。
-点目标的高亮会绘制成红色十字，区域和图像目标则绘制为红色边框。
-当前 overlay 后端基于原生 Win32 窗口实现。
+点目标本身不定义面积，因此不能作为外层搜索范围。  
+`exists()` 只做当前目标是否存在的布尔判断。  
+`if_exists()` 一旦发现目标不存在，当前链上后续动作都会被跳过，包括 `wait()`、键盘动作，以及嵌套 `locate()`。在这种跳过状态下，`locate()` 会继续返回同一个已跳过的 `Element`，而 `locate_all()` 会返回 `[]`。  
+`anchor` 支持 `top_left`、`top`、`top_right`、`left`、`center`、`right`、`bottom_left`、`bottom`、`bottom_right`。  
+`dx` / `dy` 会在锚点解析完成后，再作为屏幕绝对坐标偏移应用。  
+点目标只支持 `anchor="center"`，因为单个点天然不存在九宫格区域。  
+如果当前 `Element` 已经缓存了点位或区域，`highlight()` 会优先复用缓存，避免高亮位置与后续动作漂移。  
+点目标的高亮会绘制成红色十字，区域和图像目标则绘制为红色边框。  
+当前 overlay 后端基于原生 Win32 窗口实现。  
 如果当前环境无法提供 overlay 后端，`highlight()` 会抛出 `OverlayUnavailableError`。
 
 ### 坐标语义
@@ -150,7 +168,7 @@ auto.clear_highlights()      # 清除全部高亮
 - `region=(x, y, w, h)` 只负责限制搜索范围，不会切换到局部坐标系。
 - 图像匹配得到的仍然是基于屏幕的绝对坐标。
 - 嵌套 `locate()` 只是复用外层的绝对区域继续搜索。
-- `click()`、`move_to()` 等鼠标动作最终使用的也都是屏幕绝对坐标。
+- `auto.move_to()`、`element.hover()`、`click()` 等鼠标动作最终使用的也都是屏幕绝对坐标。
 
 ### 异常
 
@@ -161,22 +179,10 @@ auto.clear_highlights()      # 清除全部高亮
 - `OverlayUnavailableError`：当前环境无法创建调试高亮 overlay
 - `__version__`：包根导出的已安装版本字符串
 
-## 开发
+## 说明
 
-```bash
-uv sync --dev
-uv run pytest -q
-uv run ruff check .
-uv build
-```
+- `locate()` 是延迟解析的，只有动作真正执行时才取位置。
+- `locate_all()` 会快照图像匹配结果，并复用缓存点位。
+- 目标必须完整落在搜索区域内，才会被视为存在。
 
-GitHub Actions 会在 `push` 和 `pull_request` 时使用 Python 3.8 运行同样的检查。  
-发布前还会在一个干净虚拟环境里安装构建出的 wheel，并做一次最小导入校验。  
-协作说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。  
-发布说明见 [RELEASING.md](RELEASING.md)。
-
-## 设计原则
-
-- `locate()` 延迟解析，只有动作真正执行时才取位置
-- `locate_all()` 会快照图像匹配结果，并复用缓存点位
-- 目标必须完整落在搜索区域内，才会被视为存在
+开发与发版流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。

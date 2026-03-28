@@ -20,6 +20,31 @@ class TestAuto:
         auto = Auto()
         assert isinstance(auto, Auto)
 
+    @patch("baihe_autogui.core.auto.gui.move_to")
+    def test_move_to_calls_gui_move_to(self, mock_move_to):
+        Auto().move_to(100, 200)
+        mock_move_to.assert_called_once_with(100, 200)
+
+    @patch("baihe_autogui.core.auto.gui.move_by")
+    def test_move_by_calls_gui_move_by(self, mock_move_by):
+        Auto().move_by(10, -20)
+        mock_move_by.assert_called_once_with(10, -20)
+
+    @pytest.mark.parametrize(
+        ("method_name", "args", "message"),
+        [
+            ("move_to", (100, "200"), "move_to coordinates"),
+            ("move_to", (True, 200), "move_to coordinates"),
+            ("move_by", (10, "20"), "move_by offsets"),
+            ("move_by", (False, 20), "move_by offsets"),
+        ],
+    )
+    def test_move_methods_validate_integer_inputs(self, method_name, args, message):
+        auto = Auto()
+        method = getattr(auto, method_name)
+        with pytest.raises(ValidationError, match=message):
+            method(*args)
+
     @patch("baihe_autogui.core.auto.overlay.clear")
     def test_clear_highlights_calls_overlay_clear(self, mock_clear):
         Auto().clear_highlights()

@@ -15,6 +15,7 @@ pip install baihe-autogui
 ```
 
 `opencv-python` is installed as a package dependency, so image matching with `confidence=...` works without extra manual setup.
+Supports `Python >=3.8`.
 
 ## Examples
 
@@ -28,14 +29,20 @@ from baihe_autogui import Auto
 
 auto = Auto()
 
+# Global mouse movement
+auto.move_to(100, 200)
+auto.move_by(20, -10)
+
 # Locate by point
 auto.locate((100, 200)).click()
 
 # Locate by region (clicks center point)
 auto.locate((100, 200, 80, 30)).click()
+auto.locate((100, 200, 80, 30)).hover(anchor="top_right")
+auto.locate((100, 200, 80, 30)).click(anchor="bottom", dy=-2)
 
 # Locate by image
-auto.locate('button.png').move_to().click().wait(0.5).write('hello')
+auto.locate('button.png').hover().click().wait(0.5).write('hello')
 auto.locate('button.png').right_click()
 auto.locate('button.png').double_click().press('enter')
 auto.locate('button.png').hotkey('ctrl', 'a').write('replacement')
@@ -45,6 +52,8 @@ auto.locate('button.png').highlight(timeout=1.5).click()
 auto.locate('button.png').if_exists().click()
 auto.locate('button.png').wait_until_exists(timeout=5).click()
 auto.locate('button.png').assert_exists().click()
+if auto.locate('button.png').exists():
+    auto.locate('button.png').click()
 
 # Nested search inside a matched region
 auto.locate('dialog.png').locate('confirm.png').click()
@@ -85,16 +94,17 @@ All targets support `search_region`, and a target only counts as existing when i
 ### Element
 
 Chainable action wrapper created by `Auto.locate()`:
-- `move_to()` / `click()` / `right_click()` / `double_click()` - Mouse actions
+- `hover()` / `click()` / `right_click()` / `double_click()` - Element mouse actions with optional `anchor`, `dx`, and `dy`
 - `wait()` / `write()` - General actions
 - `press()` / `hotkey()` - Keyboard actions
 - `highlight()` / `clear_highlight()` - Debug overlay actions
 - `locate()` / `locate_all()` - Scope a follow-up search to the current image or region
+- `exists()` - Boolean existence check
 - `if_exists()` / `wait_until_exists()` / `assert_exists()` - Conditional methods
 
 ### Auto
 
-Main entry point. `locate()` returns one `Element`; `locate_all()` returns a list and yields `[]` when an image is not found. Both methods accept either one locator or an ordered list of mixed locators. `clear_highlights()` clears every active debug overlay.
+Main entry point. `move_to(x, y)` moves to an absolute screen coordinate, `move_by(dx, dy)` applies a relative mouse move, `locate()` returns one `Element`, and `locate_all()` returns a list that yields `[]` when an image is not found. `clear_highlights()` clears every active debug overlay.
 
 ## API Reference
 
@@ -118,10 +128,12 @@ auto.locate(target, *, region=None, confidence=0.8, timeout=0, retry=0)
 ### Element Actions
 
 ```python
-element.move_to()         # Move the cursor to the target
-element.click()           # Click at target location
-element.right_click()     # Right-click at target location
-element.double_click()    # Double-click at target location
+auto.move_to(100, 200)   # Move to an absolute screen coordinate
+auto.move_by(20, -10)    # Move relative to the current cursor position
+element.hover(anchor="center", dx=0, dy=0)  # Move to the target anchor
+element.click(anchor="center", dx=0, dy=0)  # Click at the target anchor
+element.right_click(anchor="center", dx=0, dy=0)  # Right-click at the target anchor
+element.double_click(anchor="center", dx=0, dy=0)  # Double-click at the target anchor
 element.wait(seconds)     # Wait
 element.write(text)       # Type text
 element.press("enter")    # Press a single key
@@ -130,6 +142,7 @@ element.highlight(timeout=1.5, color="red", thickness=2)  # Draw a temporary ove
 element.clear_highlight()  # Clear this element's overlay
 element.locate("inner.png")  # Search inside the current image or region
 element.locate_all("item.png")  # Search all matches inside the current image or region
+element.exists()         # Return True/False without changing chain behavior
 element.if_exists()      # Skip if element doesn't exist
 element.wait_until_exists(timeout=10)  # Wait until appears
 element.assert_exists()  # Assert element must exist
@@ -138,6 +151,11 @@ auto.clear_highlights()  # Clear every active overlay
 
 Nested locate uses the current image match box or region tuple as the next `region=...`.
 Point targets do not define an area, so they cannot be used as an outer scope.
+`exists()` only checks the current target and returns `True` or `False`.
+Once `if_exists()` encounters a missing target, the rest of that chain is skipped, including `wait()`, keyboard actions, and nested `locate()` calls. In that skipped state, `locate()` keeps returning the same skipped `Element`, while `locate_all()` returns `[]`.
+`anchor` supports `top_left`, `top`, `top_right`, `left`, `center`, `right`, `bottom_left`, `bottom`, and `bottom_right`.
+`dx` and `dy` are always applied as screen-space offsets after the anchor point is resolved.
+Point targets only support `anchor="center"` because a single point does not define a nine-grid area.
 `highlight()` reuses cached points or regions when available so the visible overlay matches follow-up actions.
 Point highlights are drawn as red crosshairs, while region and image highlights are drawn as red frames.
 The current overlay backend is implemented with native Win32 windows.
@@ -148,7 +166,7 @@ If the current environment cannot provide the overlay backend, `highlight()` rai
 - `region=(x, y, w, h)` limits the search area, but does not switch to a local coordinate system.
 - Image matches still resolve to screen-space absolute coordinates.
 - Nested `locate()` reuses the outer absolute region for the next search.
-- `click()`, `move_to()`, and other mouse actions always use absolute screen coordinates.
+- `auto.move_to()`, `element.hover()`, `click()`, and other mouse actions always use absolute screen coordinates.
 
 ### Exceptions
 
@@ -159,22 +177,10 @@ If the current environment cannot provide the overlay backend, `highlight()` rai
 - `OverlayUnavailableError` - A debug highlight overlay could not be created in the current environment
 - `__version__` - Installed package version string exposed at the package root
 
-## Development
+## Notes
 
-```bash
-uv sync --dev
-uv run pytest -q
-uv run ruff check .
-uv build
-```
+- `locate()` resolves lazily, only when an action needs the position.
+- `locate_all()` snapshots image matches and reuses cached points.
+- Targets must be fully within the search region to count as existing.
 
-GitHub Actions runs the same checks on pushes and pull requests with Python 3.8.
-Built wheels are smoke-tested through a clean virtual environment before release.
-Contribution notes live in [CONTRIBUTING.md](CONTRIBUTING.md).
-Release notes live in [RELEASING.md](RELEASING.md).
-
-## Architecture
-
-- `locate()` resolves lazily, only when an action needs the position
-- `locate_all()` snapshots matched image positions and reuses cached points
-- Targets must be fully within the search region
+For development and release workflows, see [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -38,9 +38,16 @@ def test_exception_exports():
 def test_core_gui_export():
     assert hasattr(gui, "click")
     assert hasattr(gui, "move_to")
+    assert hasattr(gui, "move_by")
     assert hasattr(gui, "right_click")
 
 
 def test_version_export():
     assert isinstance(__version__, str)
     assert __version__
+
+
+def test_element_exposes_hover_not_move_to():
+    element = Element(PointTarget(100, 200))
+    assert hasattr(element, "hover")
+    assert not hasattr(element, "move_to")

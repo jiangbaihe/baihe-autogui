@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-03-28
+
+### Added
+- Added public `Element.exists()` for boolean existence checks without changing chain behavior
+- Added `Auto.move_to(x, y)` and `Auto.move_by(dx, dy)` for explicit absolute and relative mouse movement
+
+### Changed
+- Relaxed the published runtime requirement to `Python >=3.8` while keeping local development and release validation pinned to Python 3.8 for Win7-oriented compatibility checks
+- `if_exists()` now skips the entire remaining chain once the target is missing, including waits, keyboard actions, and nested `locate()` calls
+- Renamed element-level mouse movement from `move_to()` to `hover()` so only `Auto` keeps the global `move_to()` / `move_by()` coordinate APIs
+- `Element.hover()`, `click()`, `right_click()`, and `double_click()` now accept optional nine-grid `anchor` and post-anchor `dx` / `dy` offsets for region and image targets
+- Consolidated developer documentation into `CONTRIBUTING.md` so the repository keeps one developer manual instead of separate `CLAUDE.md` and `RELEASING.md`
+
 ## [0.1.8] - 2026-03-27
 
 ### Added
