@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.16] - 2026-03-29
+
+### Fixed
+- Raised the optional `inspect` / `extra` dependency floor to `baihe-autogui-inspect>=0.1.4`, restoring the intended extension install path now that the refreshed inspect package is published for Python 3.8+.
+
 ## [0.1.15] - 2026-03-29
 
 ### Fixed
