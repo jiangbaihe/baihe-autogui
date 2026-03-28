@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-03-29
+
+### Fixed
+- Updated the release workflow to validate against `baihe-autogui-inspect v0.1.3`, matching the current published extension baseline so the tag-driven release can complete before the next inspect patch is published.
+
 ## [0.1.13] - 2026-03-29
 
 ### Fixed
