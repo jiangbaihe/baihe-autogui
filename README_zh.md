@@ -14,7 +14,22 @@ uv add baihe-autogui
 pip install baihe-autogui
 ```
 
+如果希望连同 inspect 辅助工具一起安装：
+
+```bash
+uv add "baihe-autogui[inspect]"
+```
+
+或
+
+```bash
+pip install "baihe-autogui[inspect]"
+```
+
+`baihe-autogui[extra]` 也会作为同一组扩展依赖的兼容别名保留。
+
 `opencv-python` 会作为包依赖一起安装，因此使用 `confidence=...` 的图像匹配不需要再额外手动补装 OpenCV。
+仅支持 Windows。
 支持 `Python >=3.8`。
 
 ## 示例

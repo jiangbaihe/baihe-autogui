@@ -1,6 +1,6 @@
 [project]
 name = "baihe-autogui"
-version = "0.1.10"
+version = "0.1.11"
 description = "A small GUI automation wrapper around pyautogui with a simple Auto -> Element -> Target flow"
 readme = "README.md"
 keywords = ["automation", "gui", "pyautogui", "desktop", "testing"]
@@ -11,7 +11,7 @@ requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "Operating System :: OS Independent",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -23,8 +23,18 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
+    "loguru>=0.7.3",
     "opencv-python>=4.13.0.92",
     "pyautogui>=0.9.54",
+    "pywinauto>=0.6.9",
+]
+
+[project.optional-dependencies]
+inspect = [
+    "baihe-autogui-inspect>=0.1.0,<0.2",
+]
+extra = [
+    "baihe-autogui-inspect>=0.1.0,<0.2",
 ]
 
 [project.urls]
@@ -35,6 +45,8 @@ Changelog = "https://github.com/jiangbaihe/baihe-autogui/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 dev = [
+    "mypy",
+    "pre-commit",
     "pytest>=8.3,<9",
     "ruff>=0.15,<0.16",
 ]
@@ -45,6 +57,9 @@ baihe-autogui = "baihe_autogui:main"
 [build-system]
 requires = ["uv_build>=0.10.7,<0.11.0"]
 build-backend = "uv_build"
+
+[tool.uv.sources]
+baihe-autogui-inspect = { path = "../baihe-autogui-inspect", editable = true }
 
 [tool.ruff]
 target-version = "py38"
@@ -58,3 +73,8 @@ ignore = ["E501"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+ignore_missing_imports = true

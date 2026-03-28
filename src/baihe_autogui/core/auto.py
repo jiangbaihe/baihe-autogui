@@ -112,7 +112,9 @@ class Auto:
             if not target:
                 raise ValidationError("target list must contain at least one locator")
             return [
-                self._create_single_target(candidate, region, confidence, timeout, retry)
+                self._create_single_target(
+                    candidate, region, confidence, timeout, retry
+                )
                 for candidate in target
             ]
 
@@ -134,7 +136,9 @@ class Auto:
             if not all(_is_coordinate(value) for value in target):
                 raise ValidationError("region target must be a tuple of 4 integers")
             if target[2] <= 0 or target[3] <= 0:
-                raise ValidationError("region target width and height must be greater than 0")
+                raise ValidationError(
+                    "region target width and height must be greater than 0"
+                )
             return RegionTarget(
                 target[0], target[1], target[2], target[3], search_region=region
             )

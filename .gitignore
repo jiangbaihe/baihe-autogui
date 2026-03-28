@@ -32,12 +32,13 @@ htmlcov/
 .env
 .env.*
 !.env.example
-.python-version
+!.python-version
 
 # Editors and OS files
 .idea/
 .vscode/
 .claude/
+baihe-autogui.code-workspace
 .DS_Store
 Thumbs.db
 

@@ -40,7 +40,7 @@ def _regions_intersect(
 
 
 def dedupe_match_regions(
-    regions: List[Tuple[int, int, int, int]]
+    regions: List[Tuple[int, int, int, int]],
 ) -> List[Tuple[int, int, int, int]]:
     deduped: List[Tuple[int, int, int, int]] = []
     clusters: List[List[Tuple[int, int, int, int]]] = []
@@ -156,9 +156,7 @@ class PointTarget(Target):
 
     def resolve(self) -> Point:
         if not self.exists():
-            raise ValueError(
-                f"Point ({self.x}, {self.y}) is not within search region"
-            )
+            raise ValueError(f"Point ({self.x}, {self.y}) is not within search region")
         return Point(self.x, self.y)
 
     def resolve_region(self) -> Optional[Tuple[int, int, int, int]]:
@@ -239,11 +237,14 @@ class ImageTarget(Target):
                 location = None
             if attempt < self.retry:
                 time.sleep(self.timeout)
-        raise ImageNotFoundError(f"Image not found: {self.image}")
+        raise ImageNotFoundError(f"Image not found: {self.image!r}")
 
     def _locate_all_with_retry(self) -> List[Point]:
         """Locate all image matches and return their center points."""
-        return [point_from_region(region) for region in self._locate_all_regions_with_retry()]
+        return [
+            point_from_region(region)
+            for region in self._locate_all_regions_with_retry()
+        ]
 
     def _locate_all_regions_with_retry(self) -> List[Tuple[int, int, int, int]]:
         """Locate all image matches and return their boxes."""

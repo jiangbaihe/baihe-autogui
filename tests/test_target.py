@@ -189,7 +189,9 @@ class TestImageTarget:
         ]
 
     @patch("baihe_autogui.core.target.gui.locate_all_on_screen")
-    def test_image_target_locate_all_not_found_returns_empty_list(self, mock_locate_all):
+    def test_image_target_locate_all_not_found_returns_empty_list(
+        self, mock_locate_all
+    ):
         mock_locate_all.side_effect = gui.image_not_found_exception()
         assert ImageTarget("btn.png")._locate_all_with_retry() == []
 

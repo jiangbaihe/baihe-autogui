@@ -224,7 +224,9 @@ class _OverlayApp:
         self._windows: Dict[str, int] = {}
         self._specs_by_hwnd: Dict[int, HighlightSpec] = {}
         self._wndproc = None
-        self._thread = threading.Thread(target=self._run, name="baihe-overlay", daemon=True)
+        self._thread = threading.Thread(
+            target=self._run, name="baihe-overlay", daemon=True
+        )
         self._thread.start()
         self._ready.wait()
         if self._error is not None:
@@ -339,7 +341,7 @@ class _OverlayApp:
         user32.ShowWindow(hwnd, SW_SHOWNOACTIVATE)
         user32.InvalidateRect(hwnd, None, True)
         user32.UpdateWindow(hwnd)
-        return hwnd
+        return int(hwnd)
 
     def _destroy_highlight(self, highlight_id: str) -> None:
         hwnd = self._windows.pop(highlight_id, None)

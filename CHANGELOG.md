@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-03-28
+
+### Added
+- Added optional `inspect` and compatibility `extra` extras that install the `baihe-autogui-inspect` companion tool alongside `baihe-autogui`
+
+### Changed
+- Declared `baihe-autogui` as a Windows-only project in package metadata and user-facing documentation
+- Documented local workspace wiring so the optional inspect extension resolves from the sibling `baihe-autogui-inspect` project during development
+- Added `loguru` and `pywinauto` as direct runtime dependencies so logging and Windows automation helpers are available in installed environments
+- Added `mypy` and `pre-commit` to the shared development toolchain and GitHub workflows
+
 ## [0.1.10] - 2026-03-28
 
 ### Fixed

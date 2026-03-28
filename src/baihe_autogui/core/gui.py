@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple
+from typing import Any, Iterable, Optional, Tuple, Type, cast
 
 
 class PyAutoGuiUnavailableError(RuntimeError):
@@ -10,7 +10,7 @@ class _ImageNotFoundFallbackError(Exception):
 
 
 class PyAutoGuiAdapter:
-    def _pyautogui(self):
+    def _pyautogui(self) -> Any:
         try:
             import pyautogui
         except Exception as exc:  # pragma: no cover - depends on runtime environment
@@ -20,7 +20,8 @@ class PyAutoGuiAdapter:
         return pyautogui
 
     def size(self) -> Tuple[int, int]:
-        return self._pyautogui().size()
+        width, height = cast(Tuple[int, int], self._pyautogui().size())
+        return (width, height)
 
     def move_to(self, x: int, y: int) -> None:
         self._pyautogui().moveTo(x, y)
@@ -79,16 +80,19 @@ class PyAutoGuiAdapter:
         confidence: float,
         region: Optional[Tuple[int, int, int, int]],
     ) -> Iterable[object]:
-        return self._pyautogui().locateAllOnScreen(
-            image,
-            confidence=confidence,
-            region=region,
+        return cast(
+            Iterable[object],
+            self._pyautogui().locateAllOnScreen(
+                image,
+                confidence=confidence,
+                region=region,
+            ),
         )
 
     @property
-    def image_not_found_exception(self):
+    def image_not_found_exception(self) -> Type[Exception]:
         try:
-            return self._pyautogui().ImageNotFoundException
+            return cast(Type[Exception], self._pyautogui().ImageNotFoundException)
         except PyAutoGuiUnavailableError:
             return _ImageNotFoundFallbackError
 

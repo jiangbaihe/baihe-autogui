@@ -68,6 +68,9 @@ Project priorities:
 - When API semantics change, add tests for success paths, failure paths, and edge inputs
 - Prefer mocking the `gui` adapter instead of relying on a real desktop environment in tests
 - Do not commit real business screenshots, real button assets, or real business automation scripts into the public repo
+- `baihe-autogui-inspect` is the companion extension package and is exposed here through optional dependencies
+- Keep the `inspect` extra working, and keep `extra` as a compatibility alias for the same extension set
+- In local workspace development, resolve `baihe-autogui-inspect` from `../baihe-autogui-inspect`
 
 ## Common Commands
 
@@ -75,6 +78,8 @@ Project priorities:
 uv sync --dev
 uv run pytest -q
 uv run ruff check .
+uv run mypy src tests
+uv run pre-commit run --all-files
 uv build
 ```
 
@@ -98,6 +103,7 @@ git status --short --branch
 uv sync --dev
 uv run pytest -q
 uv run ruff check .
+uv run mypy src tests
 uv build
 ```
 

@@ -14,7 +14,22 @@ or
 pip install baihe-autogui
 ```
 
+To install the inspect companion tool together with the main package:
+
+```bash
+uv add "baihe-autogui[inspect]"
+```
+
+or
+
+```bash
+pip install "baihe-autogui[inspect]"
+```
+
+`baihe-autogui[extra]` is kept as a compatibility alias for the same extension set.
+
 `opencv-python` is installed as a package dependency, so image matching with `confidence=...` works without extra manual setup.
+Windows only.
 Supports `Python >=3.8`.
 
 ## Examples

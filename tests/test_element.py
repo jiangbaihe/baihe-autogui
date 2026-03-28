@@ -166,7 +166,9 @@ class TestElement:
     @patch("baihe_autogui.core.target.gui.size")
     def test_click_with_cached_point(self, mock_size, mock_click):
         mock_size.return_value = (1920, 1080)
-        element = Element(PointTarget(100, 200), MockAuto(), cached_point=Point(300, 400))
+        element = Element(
+            PointTarget(100, 200), MockAuto(), cached_point=Point(300, 400)
+        )
         element.click()
         mock_click.assert_called_once_with(300, 400)
 
@@ -261,7 +263,9 @@ class TestElement:
         self, mock_add, mock_remove_many
     ):
         mock_add.side_effect = ["highlight-1", "highlight-2"]
-        element = Element(PointTarget(100, 200), MockAuto(), cached_point=Point(100, 200))
+        element = Element(
+            PointTarget(100, 200), MockAuto(), cached_point=Point(100, 200)
+        )
 
         element.highlight(timeout=1.0)
         element.highlight(timeout=2.0)
@@ -308,7 +312,9 @@ class TestElement:
         target = MagicMock()
         target.exists.return_value = True
         target.resolve_region.return_value = (80, 180, 40, 40)
-        target.resolve.side_effect = AssertionError("highlight should cache click point")
+        target.resolve.side_effect = AssertionError(
+            "highlight should cache click point"
+        )
         element = Element(target, auto=MockAuto())
 
         element.highlight(timeout=1.0).click()
@@ -319,7 +325,9 @@ class TestElement:
 
     @patch("baihe_autogui.core.element.overlay.remove_many")
     def test_clear_highlight_removes_only_owned_ids(self, mock_remove_many):
-        element = Element(PointTarget(100, 200), MockAuto(), cached_point=Point(100, 200))
+        element = Element(
+            PointTarget(100, 200), MockAuto(), cached_point=Point(100, 200)
+        )
         element._highlight_ids = {"highlight-1", "highlight-2"}
 
         result = element.clear_highlight()
@@ -365,11 +373,7 @@ class TestElement:
         element = Element(PointTarget(3000, 3000), MockAuto()).if_exists()
 
         result = (
-            element.click()
-            .wait(0.5)
-            .write("hello")
-            .press("enter")
-            .hotkey("ctrl", "a")
+            element.click().wait(0.5).write("hello").press("enter").hotkey("ctrl", "a")
         )
 
         assert result is element
@@ -515,4 +519,3 @@ class TestElement:
         element = Element(PointTarget(100, 200), MockAuto())
         with pytest.raises(ValidationError, match="nested locate"):
             element.locate("inner.png")
-

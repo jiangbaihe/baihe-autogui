@@ -1,5 +1,5 @@
 import time
-from typing import Any, Optional, Set
+from typing import TYPE_CHECKING, Optional, Set
 
 from .exceptions import (
     ElementNotFoundError,
@@ -17,6 +17,9 @@ from .target import (
     point_from_region_anchor,
 )
 from .types import LocateInput, OptionalRegion
+
+if TYPE_CHECKING:
+    from .auto import Auto
 
 DEFAULT_ANCHOR = "center"
 VALID_ANCHORS = {
@@ -36,7 +39,7 @@ class Element:
     def __init__(
         self,
         target: Target,
-        auto: Any = None,
+        auto: Optional["Auto"] = None,
         cached_point: Optional[Point] = None,
         cached_region: OptionalRegion = None,
     ):
@@ -131,9 +134,7 @@ class Element:
 
         if self.exists():
             if anchor != DEFAULT_ANCHOR:
-                raise ValidationError(
-                    "point targets only support anchor='center'"
-                )
+                raise ValidationError("point targets only support anchor='center'")
             point = self._resolve_point()
             return Point(point.x + dx, point.y + dy)
         if self._required:
@@ -210,7 +211,7 @@ class Element:
             )
         return region
 
-    def _get_auto(self):
+    def _get_auto(self) -> "Auto":
         if self._auto is None:
             from .auto import Auto
 
@@ -326,7 +327,9 @@ class Element:
         if self._should_skip_chain():
             return self
         if timeout is not None and timeout < 0:
-            raise ValidationError("highlight timeout must be greater than or equal to 0")
+            raise ValidationError(
+                "highlight timeout must be greater than or equal to 0"
+            )
         if thickness <= 0:
             raise ValidationError("highlight thickness must be greater than 0")
 
