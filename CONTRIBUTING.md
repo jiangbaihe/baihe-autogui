@@ -83,6 +83,7 @@ uv build
 - Local development and release validation stay on Python `3.8`
 - Published artifacts support `Python >=3.8`
 - For Windows / headless CI issues, prefer solving them by mocking the `gui` adapter
+- GitHub Actions test/build jobs run on Windows to match the project's actual automation platform
 
 ## Release Checklist
 

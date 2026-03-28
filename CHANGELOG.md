@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-03-28
+
+### Fixed
+- Switched GitHub Actions test/build jobs from Ubuntu to Windows so GUI-related tests run in the project's intended platform environment
+- Updated workflow smoke tests to resolve the built wheel path explicitly in PowerShell instead of relying on shell glob expansion
+
 ## [0.1.9] - 2026-03-28
 
 ### Added

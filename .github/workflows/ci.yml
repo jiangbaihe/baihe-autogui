@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Check out repository
@@ -37,4 +37,5 @@ jobs:
 
       - name: Smoke test built wheel
         run: |
-          uv run --python 3.8 --no-project --with ./dist/*.whl python scripts/smoke_import.py
+          $wheel = (Get-ChildItem dist\*.whl | Select-Object -First 1).FullName
+          uv run --python 3.8 --no-project --with $wheel python scripts/smoke_import.py
