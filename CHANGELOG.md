@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-03-29
+
+### Fixed
+- Updated GitHub Actions to check out the sibling `baihe-autogui-inspect` repository in the same workspace layout used by local development, so `uv sync --locked --dev` works in CI and release jobs.
+- Aligned the lockfile and workflow baseline with `baihe-autogui-inspect v0.1.2`.
+
 ## [0.1.11] - 2026-03-28
 
 ### Added
