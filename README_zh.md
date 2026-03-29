@@ -177,8 +177,9 @@ auto.clear_highlights()      # 清除全部高亮
 `dx` / `dy` 会在锚点解析完成后，再作为屏幕绝对坐标偏移应用。  
 点目标只支持 `anchor="center"`，因为单个点天然不存在九宫格区域。  
 如果当前 `Element` 已经缓存了点位或区域，`highlight()` 会优先复用缓存，避免高亮位置与后续动作漂移。  
-点目标的高亮会绘制成红色十字，区域和图像目标则绘制为红色边框。  
-当前 overlay 后端基于原生 Win32 窗口实现。  
+点目标的高亮会绘制成柔和红色十字，区域和图像目标则绘制为柔和红色边框。
+像 `red`、`green`、`blue`、`yellow` 这样的命名颜色现在会映射到更柔和的默认色板，而不是纯高饱和原色。
+当前 overlay 后端基于 `pywin32` 和原生 Win32 窗口实现。
 如果当前环境无法提供 overlay 后端，`highlight()` 会抛出 `OverlayUnavailableError`。
 
 ### 坐标语义

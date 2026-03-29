@@ -174,8 +174,9 @@ Once `if_exists()` encounters a missing target, the rest of that chain is skippe
 `dx` and `dy` are always applied as screen-space offsets after the anchor point is resolved.
 Point targets only support `anchor="center"` because a single point does not define a nine-grid area.
 `highlight()` reuses cached points or regions when available so the visible overlay matches follow-up actions.
-Point highlights are drawn as red crosshairs, while region and image highlights are drawn as red frames.
-The current overlay backend is implemented with native Win32 windows.
+Point highlights are drawn as soft-red crosshairs, while region and image highlights are drawn as soft-red frames.
+Named highlight colors such as `red`, `green`, `blue`, and `yellow` use a softer default palette instead of fully saturated primaries.
+The current overlay backend is implemented with `pywin32` on top of native Win32 windows.
 If the current environment cannot provide the overlay backend, `highlight()` raises `OverlayUnavailableError`.
 
 ### Coordinate Semantics

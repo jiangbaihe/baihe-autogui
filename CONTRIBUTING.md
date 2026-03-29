@@ -49,8 +49,9 @@ Project priorities:
 - `Element.highlight()` draws a temporary debug overlay
 - `Element.clear_highlight()` clears only that element's own highlight
 - `Auto.clear_highlights()` clears every active highlight
-- The current highlight backend uses Win32 overlay windows
-- Region / image targets render as red frames; point targets render as red crosshairs
+- The current highlight backend uses `pywin32` with Win32 overlay windows
+- Region / image targets render as soft red frames; point targets render as soft red crosshairs by default
+- Named colors such as `red`, `green`, and `yellow` should stay on the softer palette instead of fully saturated primaries
 - This is a current platform-specific capability and should not be treated as a cross-platform guarantee
 
 ## Packaging And Extension Semantics

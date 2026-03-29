@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Documented the long-term extension release policy so `baihe-autogui` tracks a compatible inspect release line instead of republishing for every inspect-only patch.
+- Switched the debug highlight backend from the custom `ctypes` Win32 layer to a `pywin32` implementation and softened the built-in named highlight colors.
 
 ## [0.1.16] - 2026-03-29
 
